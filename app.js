@@ -448,8 +448,8 @@ async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v20_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v20_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v21_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v21_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -574,6 +574,21 @@ async function loadData(forceRefresh = false) {
 function processLoadedData(dataArray) {
   rawApiPoints = [];
   spotDataStore = {};
+
+  // Si el modelo seleccionado es AROME HD, recortar estrictamente a sus 48 horas reales (2 días)
+  if (selectedModel === 'arome_france_hd') {
+    dataArray.forEach(item => {
+      if (item && item.hourly && item.hourly.time && item.hourly.time.length > 48) {
+        item.hourly.time = item.hourly.time.slice(0, 48);
+        if (item.hourly.wind_speed_10m) item.hourly.wind_speed_10m = item.hourly.wind_speed_10m.slice(0, 48);
+        if (item.hourly.wind_direction_10m) item.hourly.wind_direction_10m = item.hourly.wind_direction_10m.slice(0, 48);
+        if (item.hourly.wind_gusts_10m) item.hourly.wind_gusts_10m = item.hourly.wind_gusts_10m.slice(0, 48);
+        if (item.hourly.temperature_2m) item.hourly.temperature_2m = item.hourly.temperature_2m.slice(0, 48);
+        if (item.hourly.precipitation_probability) item.hourly.precipitation_probability = item.hourly.precipitation_probability.slice(0, 48);
+        if (item.hourly.weather_code) item.hourly.weather_code = item.hourly.weather_code.slice(0, 48);
+      }
+    });
+  }
 
   dataArray.forEach(item => {
     if (item.isSpot) {
