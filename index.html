@@ -28,7 +28,7 @@
   <!-- GIF export: codificador GIF89a nativo integrado en app.js (sin dependencias externas) -->
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=16" />
 </head>
 
 <body>
@@ -234,14 +234,17 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- App JS -->
-  <script src="app.js"></script>
+  <script src="app.js?v=16"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('PWA ServiceWorker registrado con éxito:', reg.scope))
+          .then(reg => {
+            console.log('PWA ServiceWorker registrado con éxito:', reg.scope);
+            reg.update();
+          })
           .catch(err => console.warn('Error al registrar ServiceWorker:', err));
       });
     }
