@@ -448,8 +448,8 @@ async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v21_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v21_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v22_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v22_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -609,6 +609,7 @@ function processLoadedData(dataArray) {
 // --- Selector de Días ---
 function setupDaySelector(timeList) {
   const container = document.getElementById('daySelector');
+  if (!container) return;
   container.innerHTML = '';
 
   const dayIndices = [];
@@ -634,6 +635,22 @@ function setupDaySelector(timeList) {
     });
     container.appendChild(chip);
   });
+
+  // Si se usa AROME HD (48h), añadir botón de aviso interactivo para cambiar a 5 Días
+  if (selectedModel === 'arome_france_hd') {
+    const noticeBtn = document.createElement('button');
+    noticeBtn.className = 'day-chip-notice';
+    noticeBtn.title = 'AROME HD solo ofrece 48h de previsión. Haz clic para cambiar a ICON 7k (5 Días).';
+    noticeBtn.innerHTML = `<span>Días 3–5 no disponibles en AROME (48h) • Cambiar a ICON 7k</span>`;
+    noticeBtn.addEventListener('click', () => {
+      document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+      const iconBtn = document.querySelector('.model-btn[data-model="icon_eu"]');
+      if (iconBtn) iconBtn.classList.add('active');
+      selectedModel = 'icon_eu';
+      loadData(true);
+    });
+    container.appendChild(noticeBtn);
+  }
 }
 
 // --- Actualización de la Interfaz ---

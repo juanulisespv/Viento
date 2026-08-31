@@ -759,6 +759,27 @@ body {
   border-color: var(--accent-blue);
 }
 
+.day-chip-notice {
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px dashed rgba(234, 179, 8, 0.4);
+  color: #fde047;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.day-chip-notice:hover {
+  background: rgba(234, 179, 8, 0.25);
+  border-color: #fde047;
+  transform: translateY(-1px);
+}
+
 .player-controls .play-btn {
   width: 36px;
   height: 36px;
