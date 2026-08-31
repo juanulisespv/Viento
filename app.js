@@ -680,9 +680,13 @@ function renderGridMarkers() {
   }
 
   visiblePoints.forEach(point => {
-    const speedKmh = point.hourly.wind_speed_10m[currentHourIndex];
-    const gustsKmh = point.hourly.wind_gusts_10m[currentHourIndex];
-    const dir = point.hourly.wind_direction_10m[currentHourIndex];
+    let speedKmh = point.hourly.wind_speed_10m[currentHourIndex];
+    let gustsKmh = point.hourly.wind_gusts_10m[currentHourIndex];
+    let dir = point.hourly.wind_direction_10m[currentHourIndex];
+
+    if (speedKmh === null || speedKmh === undefined || isNaN(speedKmh)) speedKmh = 0;
+    if (gustsKmh === null || gustsKmh === undefined || isNaN(gustsKmh)) gustsKmh = speedKmh;
+    if (dir === null || dir === undefined || isNaN(dir)) dir = 0;
 
     const speedKnots = kmhToKnots(speedKmh);
     const gustsKnots = kmhToKnots(gustsKmh);
@@ -1524,7 +1528,7 @@ function knotsToKmh(kn) {
 }
 
 function getWingfoilColor(knots) {
-  if (knots < 8) return 'var(--c-calm)';
+  if (knots === null || knots === undefined || isNaN(knots) || knots < 8) return 'var(--c-calm)';
   if (knots < 12) return 'var(--c-light)';
   if (knots < 16) return 'var(--c-ideal-soft)';
   if (knots <= 20) return 'var(--c-ideal-strong)';

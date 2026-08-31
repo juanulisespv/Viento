@@ -51,7 +51,7 @@ const SPOT_REGIONS = [
 
 const API_GRID_ROWS = 14;
 const API_GRID_COLS = 14;
-const MODELS = ['arome_france_hd', 'icon_eu', 'best_match'];
+const MODELS = ['best_match', 'icon_eu', 'arome_france_hd'];
 
 function calculateRegionBBox(region) {
   const lats = region.spots.map(s => s.lat);
@@ -104,21 +104,21 @@ function generateSamplingCoordinates(region) {
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-async function fetchWithRetry(url, retries = 5) {
+async function fetchWithRetry(url, retries = 6) {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(url);
       if (res.ok) return await res.json();
       if (res.status === 429) {
-        const waitMs = (4 + i * 3) * 1000;
-        console.log(`    ⚠️ Open-Meteo 429. Pausando ${waitMs / 1000}s...`);
+        const waitMs = (5 + i * 4) * 1000;
+        console.log(`    ⚠️ Open-Meteo Rate Limit (429). Pausando ${waitMs / 1000}s...`);
         await delay(waitMs);
       } else {
-        await delay(1500);
+        await delay(2000);
       }
     } catch (err) {
       if (i === retries - 1) throw err;
-      await delay(2000);
+      await delay(3000);
     }
   }
   throw new Error(`Error en llamada Open-Meteo tras reintentos.`);
@@ -168,12 +168,33 @@ async function main() {
       console.log(`  -> Descargando modelo: ${model}...`);
       try {
         const results = await fetchModelData(points, model);
+
+        // Si es arome_france_hd o icon_eu y tiene horas nulas al final (>48h), rellenar con best_match
+        if (model !== 'best_match' && regionPayload.models['best_match']) {
+          const bmResults = regionPayload.models['best_match'];
+          results.forEach((pt, ptIdx) => {
+            const bmPt = bmResults[ptIdx];
+            if (bmPt && bmPt.hourly && pt.hourly) {
+              const hCount = pt.hourly.time ? pt.hourly.time.length : 0;
+              for (let h = 0; h < hCount; h++) {
+                if (pt.hourly.wind_speed_10m[h] === null || pt.hourly.wind_speed_10m[h] === undefined) {
+                  pt.hourly.wind_speed_10m[h] = bmPt.hourly.wind_speed_10m[h];
+                  pt.hourly.wind_direction_10m[h] = bmPt.hourly.wind_direction_10m[h];
+                  pt.hourly.wind_gusts_10m[h] = bmPt.hourly.wind_gusts_10m[h];
+                  pt.hourly.temperature_2m[h] = bmPt.hourly.temperature_2m[h];
+                  pt.hourly.precipitation_probability[h] = bmPt.hourly.precipitation_probability[h];
+                }
+              }
+            }
+          });
+        }
+
         regionPayload.models[model] = results;
         console.log(`  ✓ Modelo ${model} descargado con éxito (${results.length} puntos).`);
       } catch (err) {
         console.error(`  ❌ Error descargando ${model} para ${region.id}:`, err.message);
       }
-      await delay(2500);
+      await delay(3000);
     }
 
     const filePath = path.join(dataDir, `${region.id}.json`);
