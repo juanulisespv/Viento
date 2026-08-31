@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Previsión de Viento — Ullíbarri-Gamboa & Urrunaga | Wingfoil & Deportes de Viento</title>
+  <meta name="description"
+    content="Previsión de viento a 5 días con mapa de cuadrícula densa para los embalses de Ullíbarri-Gamboa y Urrunaga (Álava). Especial para wingfoil, windsurf y kitesurf." />
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Viento Embalses" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- GIF export: codificador GIF89a nativo integrado en app.js (sin dependencias externas) -->
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
+          </svg>
+        </div>
+        <div>
+          <h1>Viento Llanada Alavesa</h1>
+          <p class="subtitle">Ullíbarri-Gamboa & Urrunaga — Wingfoil & Windsurf</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="weekly-btn" id="weeklyBtn" title="Resumen de la semana en tabla">
+          📊 <span>Resumen 5 Días</span>
+        </button>
+
+        <div class="gif-dropdown">
+          <button class="gif-btn" id="exportGifBtn" title="Exportar GIF animado">
+            🎬 <span>Exportar GIF ▾</span>
+          </button>
+          <div class="gif-menu" id="gifMenu">
+            <button class="gif-menu-item" id="export24hBtn">📅 GIF 24h (Día Actual)</button>
+            <button class="gif-menu-item" id="export120hBtn">🗓️ GIF 5 Días Completo (120h)</button>
+          </div>
+        </div>
+
+        <div class="model-toggle" id="modelToggle">
+          <button class="model-btn active" data-model="arome_france_hd" title="AROME HD (1.3 km Météo-France) — Máxima precisión en Álava (48h)">🇫🇷 AROME 1.3k</button>
+          <button class="model-btn" data-model="icon_eu" title="ICON-EU (7 km DWD Alemania) — 5 Días">🇩🇪 ICON 7k</button>
+          <button class="model-btn" data-model="best_match" title="Best Match (Open-Meteo Combinado) — 5 Días">🌐 Global</button>
+        </div>
+
+        <div class="unit-toggle" id="unitToggle">
+          <button class="unit-btn active" data-unit="knots">Nudos (kn)</button>
+          <button class="unit-btn" data-unit="kmh">km/h</button>
+        </div>
+
+        <div class="cache-status" id="cacheStatus" title="Estado de los datos">
+          <span class="status-dot green"></span>
+          <span class="status-text" id="statusText">Cargando...</span>
+        </div>
+
+        <button class="refresh-btn" id="refreshBtn" title="Actualizar datos de Open-Meteo">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+          </svg>
+          <span>Recargar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Leaflet Map Container -->
+      <div id="map" class="map-view"></div>
+
+      <!-- Floating Legend Overlay -->
+      <div class="map-overlay legend-overlay">
+        <div class="density-badge" id="densityBadge">Calculando densidad...</div>
+        <h4>Intensidad Viento Wingfoil</h4>
+        <div class="legend-scale">
+          <div class="legend-item"><span class="color-box c-calm"></span> &lt; 8 kn Flojo</div>
+          <div class="legend-item"><span class="color-box c-light"></span> 8 - 12 kn Suave</div>
+          <div class="legend-item"><span class="color-box c-ideal-soft"></span> 12 - 16 kn Ideal Suave</div>
+          <div class="legend-item"><span class="color-box c-ideal-strong"></span> 16 - 20 kn Ideal Fuerte</div>
+          <div class="legend-item"><span class="color-box c-strong"></span> 20 - 25 kn Fuerte</div>
+          <div class="legend-item"><span class="color-box c-extreme"></span> &gt; 25 kn Muy Fuerte</div>
+        </div>
+      </div>
+
+      <!-- Left Column Overlay (Spot Cards + Mejores Ventanas) -->
+      <div class="map-overlay-column left-column">
+        <!-- Quick Spot Cards Overlay -->
+        <div class="spots-overlay">
+          <div class="spot-card" id="spotCardGaraio">
+            <div class="spot-header">
+              <h3>Garaio (Club Náutico)</h3>
+              <span class="spot-badge" id="badgeGaraio">-- kn</span>
+            </div>
+            <div class="spot-details">
+              <div class="stat"><span class="lbl">Viento:</span> <strong id="windGaraio">--</strong></div>
+              <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gustGaraio">--</strong></div>
+              <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactorGaraio">--</strong></div>
+              <div class="stat"><span class="lbl">Dir:</span> <strong id="dirGaraio">--</strong></div>
+            </div>
+          </div>
+
+          <div class="spot-card" id="spotCardLanda">
+            <div class="spot-header">
+              <h3>Landa (Playa)</h3>
+              <span class="spot-badge" id="badgeLanda">-- kn</span>
+            </div>
+            <div class="spot-details">
+              <div class="stat"><span class="lbl">Viento:</span> <strong id="windLanda">--</strong></div>
+              <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gustLanda">--</strong></div>
+              <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactorLanda">--</strong></div>
+              <div class="stat"><span class="lbl">Dir:</span> <strong id="dirLanda">--</strong></div>
+            </div>
+          </div>
+
+          <div class="spot-card" id="spotCardUrrunaga">
+            <div class="spot-header">
+              <h3>Urrunaga</h3>
+              <span class="spot-badge" id="badgeUrrunaga">-- kn</span>
+            </div>
+            <div class="spot-details">
+              <div class="stat"><span class="lbl">Viento:</span> <strong id="windUrrunaga">--</strong></div>
+              <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gustUrrunaga">--</strong></div>
+              <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactorUrrunaga">--</strong></div>
+              <div class="stat"><span class="lbl">Dir:</span> <strong id="dirUrrunaga">--</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Best Windows Panel Overlay (Mejores Ventanas) -->
+        <div class="best-windows-overlay" id="bestWindowsOverlay">
+          <div class="best-windows-header">
+            <h4>🌟 Mejores Ventanas Wingfoil (5 Días)</h4>
+          </div>
+          <div class="best-windows-list" id="bestWindowsList">
+            <div class="window-item-loading">Calculando ventanas óptimas...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spot Forecast Modal / Drawer (when clicking a spot) -->
+      <div class="spot-modal" id="spotModal">
+        <div class="modal-content glass-card">
+          <button class="modal-close" id="modalClose">&times;</button>
+          <h2 id="modalTitle">Detalle de Embalse</h2>
+          <p id="modalSubtitle" class="modal-sub">Previsión horaria para las próximas 24h</p>
+
+          <div class="spot-summary-grid">
+            <div class="summary-box">
+              <span class="box-label">Estado Wingfoil</span>
+              <span class="box-val highlight" id="modalWingStatus">--</span>
+            </div>
+            <div class="summary-box">
+              <span class="box-label">Viento Max Hoy</span>
+              <span class="box-val" id="modalMaxWind">--</span>
+            </div>
+            <div class="summary-box">
+              <span class="box-label">Mejor Hora Hoy</span>
+              <span class="box-val" id="modalBestTime">--</span>
+            </div>
+            <div class="summary-box">
+              <span class="box-label">Temp / Lluvia</span>
+              <span class="box-val" id="modalTempRain">--</span>
+            </div>
+          </div>
+
+          <div class="timeline-chart-container">
+            <h4>Evolución Horaria de Viento (24 Horas)</h4>
+            <div class="hourly-bar-chart" id="hourlyChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Summary Modal (Resumen 5 Días en Tabla) -->
+      <div class="spot-modal" id="weeklyModal">
+        <div class="modal-content glass-card weekly-modal-content">
+          <button class="modal-close" id="weeklyModalClose">&times;</button>
+          <h2>📊 Resumen Semanal de Wingfoil (5 Días)</h2>
+          <p class="modal-sub">Visión general rápida para planificar tus sesiones de navegación</p>
+
+          <div class="weekly-table-container">
+            <table class="weekly-table" id="weeklyTable">
+              <thead>
+                <tr>
+                  <th>Día</th>
+                  <th>Calidad</th>
+                  <th>Mejor Ventana</th>
+                  <th>Viento Medio / Max</th>
+                  <th>Ráfagas Max</th>
+                  <th>Dirección</th>
+                  <th>Estabilidad</th>
+                </tr>
+              </thead>
+              <tbody id="weeklyTableBody">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Control Bar (Time Slider & Quick Navigation) -->
+    <footer class="time-control-bar glass-card">
+      <div class="time-header">
+        <div class="time-display">
+          <span class="time-icon">🕒</span>
+          <span class="current-date-time" id="currentDateTime">Cargando previsión...</span>
+        </div>
+
+        <!-- Quick Day Buttons -->
+        <div class="day-selector" id="daySelector">
+          <!-- Filled by JS -->
+        </div>
+
+        <div class="player-controls">
+          <button class="play-btn" id="playBtn" title="Reproducir animación horaria">
+            <svg id="playIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="slider-wrapper">
+        <input type="range" id="timeSlider" min="0" max="119" value="0" step="1" class="time-slider" />
+        <div class="ticks-container" id="ticksContainer"></div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- App JS -->
+  <script src="app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA ServiceWorker registrado con éxito:', reg.scope))
+          .catch(err => console.warn('Error al registrar ServiceWorker:', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
