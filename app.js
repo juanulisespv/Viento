@@ -432,13 +432,13 @@ function getLatestModelRun() {
   return `${dateStr}_${latestRunHour.toString().padStart(2, '0')}UTC`;
 }
 
-// --- Carga de Datos Resiliente con Caché por Modelo y Región ---
+// --- Carga de Datos Resiliente (JSON Estático con Fallback a API Directa) ---
 async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v16_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v16_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v18_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v18_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -447,9 +447,9 @@ async function loadData(forceRefresh = false) {
   const isCacheValid = cachedModelRun === currentModelRun && cachedData;
 
   const modelNames = {
-    'arome_france_hd': 'AROME HD 1.3km 🇫🇷',
-    'icon_eu': 'ICON-EU 7km 🇩🇪',
-    'best_match': 'Global 🌐'
+    'arome_france_hd': 'AROME HD 1.3km',
+    'icon_eu': 'ICON-EU 7km',
+    'best_match': 'Global'
   };
   const modelLabel = modelNames[selectedModel] || selectedModel;
 
@@ -458,20 +458,45 @@ async function loadData(forceRefresh = false) {
       const parsed = JSON.parse(cachedData);
       processLoadedData(parsed);
 
-      statusText.textContent = `${modelLabel} (${parsed[0]?.hourly?.time?.length || 48}h)`;
-      statusDot.className = 'status-dot green';
+      if (statusText) statusText.textContent = `${modelLabel} (${parsed[0]?.hourly?.time?.length || 48}h)`;
+      if (statusDot) statusDot.className = 'status-dot green';
       return;
     } catch (e) {
-      console.warn('Caché dañada, consultando API...');
+      console.warn('Caché dañada, intentando cargar datos estáticos...');
     }
   }
 
-  statusText.textContent = `Consultando ${modelLabel}...`;
-  statusDot.className = 'status-dot yellow';
+  if (statusText) statusText.textContent = `Cargando ${modelLabel}...`;
+  if (statusDot) statusDot.className = 'status-dot yellow';
 
+  // 1. Intentar cargar desde JSON estático generado en servidor (GitHub Actions)
+  try {
+    const staticUrl = `./data/${selectedRegionId}.json?v=${Date.now()}`;
+    const staticRes = await fetch(staticUrl);
+    if (staticRes.ok) {
+      const staticPayload = await staticRes.json();
+      if (staticPayload && staticPayload.models && staticPayload.models[selectedModel]) {
+        const results = staticPayload.models[selectedModel];
+        try {
+          localStorage.setItem(cacheKeyModel, JSON.stringify(results));
+          localStorage.setItem(cacheModelRunKey, currentModelRun);
+        } catch (sErr) {}
+
+        processLoadedData(results);
+        const totalHours = results[0]?.hourly?.time?.length || 48;
+        if (statusText) statusText.textContent = `${modelLabel} (${totalHours}h)`;
+        if (statusDot) statusDot.className = 'status-dot green';
+        return;
+      }
+    }
+  } catch (staticErr) {
+    console.warn('Servidor estático no disponible, usando API en vivo:', staticErr);
+  }
+
+  // 2. Fallback a consulta en vivo a Open-Meteo API
   try {
     const points = generateSamplingCoordinates();
-    const BATCH_SIZE = 250; // 1 sola petición HTTP por zona
+    const BATCH_SIZE = 250;
     const batches = [];
     for (let i = 0; i < points.length; i += BATCH_SIZE) {
       batches.push(points.slice(i, i + BATCH_SIZE));
@@ -486,9 +511,6 @@ async function loadData(forceRefresh = false) {
       const lons = batch.map(p => p.lon).join(',');
 
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m,precipitation_probability,weather_code${modelParam}&forecast_days=5&timezone=Europe/Madrid`;
-
-      const pct = Math.round(((bIdx + 1) / batches.length) * 100);
-      statusText.textContent = `Cargando ${modelLabel} (${pct}%)...`;
 
       const data = await fetchBatchWithRetry(url, statusText);
       const dataArray = Array.isArray(data) ? data : [data];
@@ -510,30 +532,28 @@ async function loadData(forceRefresh = false) {
     try {
       localStorage.setItem(cacheKeyModel, JSON.stringify(allResults));
       localStorage.setItem(cacheModelRunKey, currentModelRun);
-    } catch (storageErr) {
-      console.warn('Caché ignorada en localStorage');
-    }
+    } catch (storageErr) {}
 
     processLoadedData(allResults);
 
     const totalHours = allResults[0]?.hourly?.time?.length || 48;
-    statusText.textContent = `${modelLabel} (${totalHours}h)`;
-    statusDot.className = 'status-dot green';
+    if (statusText) statusText.textContent = `${modelLabel} (${totalHours}h)`;
+    if (statusDot) statusDot.className = 'status-dot green';
   } catch (err) {
-    console.error('Error al cargar datos de embalses:', err);
+    console.error('Error al cargar datos:', err);
     
     if (cachedData) {
       try {
         const parsed = JSON.parse(cachedData);
         processLoadedData(parsed);
-        statusText.textContent = `${modelLabel} (Caché previa)`;
-        statusDot.className = 'status-dot yellow';
+        if (statusText) statusText.textContent = `${modelLabel} (Caché previa)`;
+        if (statusDot) statusDot.className = 'status-dot yellow';
         return;
       } catch (e) {}
     }
 
-    statusText.textContent = 'Reintentando en 5s...';
-    statusDot.className = 'status-dot yellow';
+    if (statusText) statusText.textContent = 'Reintentando en 5s...';
+    if (statusDot) statusDot.className = 'status-dot yellow';
 
     setTimeout(() => loadData(true), 5000);
   }
