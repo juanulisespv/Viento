@@ -1,4 +1,4 @@
-const CACHE_NAME = 'viento-embalses-v2';
+const CACHE_NAME = 'viento-embalses-v3';
 const ASSETS = [
   './',
   './index.html',

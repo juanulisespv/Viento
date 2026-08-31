@@ -230,10 +230,12 @@ function renderSpotCards() {
 // --- Event Listeners ---
 function initEventListeners() {
   const slider = document.getElementById('timeSlider');
-  slider.addEventListener('input', (e) => {
-    currentHourIndex = parseInt(e.target.value, 10);
-    updateVisualization();
-  });
+  if (slider) {
+    slider.addEventListener('input', (e) => {
+      currentHourIndex = parseInt(e.target.value, 10);
+      updateVisualization();
+    });
+  }
 
   // Listener para el selector de zona
   const zoneSelect = document.getElementById('zoneSelect');
@@ -243,70 +245,108 @@ function initEventListeners() {
     });
   }
 
-  document.getElementById('playBtn').addEventListener('click', togglePlay);
+  const playBtn = document.getElementById('playBtn');
+  if (playBtn) playBtn.addEventListener('click', togglePlay);
 
-  document.getElementById('refreshBtn').addEventListener('click', () => {
-    loadData(true);
-  });
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      loadData(true);
+    });
+  }
 
   // Resumen Semanal Modal
-  document.getElementById('weeklyBtn').addEventListener('click', () => {
-    calculateWeeklySummary();
-    document.getElementById('weeklyModal').classList.add('active');
-  });
+  const weeklyBtn = document.getElementById('weeklyBtn');
+  if (weeklyBtn) {
+    weeklyBtn.addEventListener('click', () => {
+      calculateWeeklySummary();
+      const modal = document.getElementById('weeklyModal');
+      if (modal) modal.classList.add('active');
+    });
+  }
 
-  document.getElementById('weeklyModalClose').addEventListener('click', () => {
-    document.getElementById('weeklyModal').classList.remove('active');
-  });
+  const weeklyModalClose = document.getElementById('weeklyModalClose');
+  if (weeklyModalClose) {
+    weeklyModalClose.addEventListener('click', () => {
+      const modal = document.getElementById('weeklyModal');
+      if (modal) modal.classList.remove('active');
+    });
+  }
 
-  document.getElementById('weeklyModal').addEventListener('click', (e) => {
-    if (e.target.id === 'weeklyModal') {
-      document.getElementById('weeklyModal').classList.remove('active');
-    }
-  });
+  const weeklyModal = document.getElementById('weeklyModal');
+  if (weeklyModal) {
+    weeklyModal.addEventListener('click', (e) => {
+      if (e.target.id === 'weeklyModal') {
+        weeklyModal.classList.remove('active');
+      }
+    });
+  }
 
   // GIF Dropdown Menu
   const gifBtn = document.getElementById('exportGifBtn');
-  const gifDropdown = gifBtn.parentElement;
-  gifBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    gifDropdown.classList.toggle('active');
-  });
+  if (gifBtn) {
+    const gifDropdown = gifBtn.parentElement;
+    gifBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (gifDropdown) gifDropdown.classList.toggle('active');
+    });
 
-  document.addEventListener('click', () => gifDropdown.classList.remove('active'));
+    document.addEventListener('click', () => {
+      if (gifDropdown) gifDropdown.classList.remove('active');
+    });
+  }
 
-  document.getElementById('export24hBtn').addEventListener('click', () => {
-    gifDropdown.classList.remove('active');
-    exportGif(24);
-  });
+  const export24hBtn = document.getElementById('export24hBtn');
+  if (export24hBtn) {
+    export24hBtn.addEventListener('click', () => {
+      const gifDropdown = document.getElementById('gifMenu')?.parentElement;
+      if (gifDropdown) gifDropdown.classList.remove('active');
+      exportGif(24);
+    });
+  }
 
-  document.getElementById('export120hBtn').addEventListener('click', () => {
-    gifDropdown.classList.remove('active');
-    exportGif(120);
-  });
+  const export120hBtn = document.getElementById('export120hBtn');
+  if (export120hBtn) {
+    export120hBtn.addEventListener('click', () => {
+      const gifDropdown = document.getElementById('gifMenu')?.parentElement;
+      if (gifDropdown) gifDropdown.classList.remove('active');
+      exportGif(120);
+    });
+  }
 
-  document.getElementById('modelToggle').addEventListener('click', (e) => {
-    if (e.target.classList.contains('model-btn')) {
-      document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active'));
-      e.target.classList.add('active');
-      selectedModel = e.target.dataset.model;
-      loadData(true);
-    }
-  });
+  const modelToggle = document.getElementById('modelToggle');
+  if (modelToggle) {
+    modelToggle.addEventListener('click', (e) => {
+      if (e.target.classList.contains('model-btn')) {
+        document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedModel = e.target.dataset.model;
+        loadData(true);
+      }
+    });
+  }
 
-  document.getElementById('unitToggle').addEventListener('click', (e) => {
-    if (e.target.classList.contains('unit-btn')) {
-      document.querySelectorAll('.unit-btn').forEach(btn => btn.classList.remove('active'));
-      e.target.classList.add('active');
-      selectedUnit = e.target.dataset.unit;
-      updateVisualization();
-    }
-  });
+  const unitToggle = document.getElementById('unitToggle');
+  if (unitToggle) {
+    unitToggle.addEventListener('click', (e) => {
+      if (e.target.classList.contains('unit-btn')) {
+        document.querySelectorAll('.unit-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedUnit = e.target.dataset.unit;
+        updateVisualization();
+      }
+    });
+  }
 
-  document.getElementById('modalClose').addEventListener('click', closeSpotModal);
-  document.getElementById('spotModal').addEventListener('click', (e) => {
-    if (e.target.id === 'spotModal') closeSpotModal();
-  });
+  const modalClose = document.getElementById('modalClose');
+  if (modalClose) modalClose.addEventListener('click', closeSpotModal);
+
+  const spotModal = document.getElementById('spotModal');
+  if (spotModal) {
+    spotModal.addEventListener('click', (e) => {
+      if (e.target.id === 'spotModal') closeSpotModal();
+    });
+  }
 }
 
 // --- Cambio de Zona / Región ---
