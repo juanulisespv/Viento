@@ -448,8 +448,8 @@ async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v18_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v18_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v20_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v20_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -518,6 +518,8 @@ async function loadData(forceRefresh = false) {
 
     for (let bIdx = 0; bIdx < batches.length; bIdx++) {
       const batch = batches[bIdx];
+      const lats = batch.map(p => p.lat).join(',');
+      const lons = batch.map(p => p.lon).join(',');
       const daysParam = selectedModel === 'arome_france_hd' ? 2 : 5;
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m,precipitation_probability,weather_code${modelParam}&forecast_days=${daysParam}&timezone=Europe/Madrid`;
 
