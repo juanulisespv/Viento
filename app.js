@@ -265,6 +265,17 @@ function initEventListeners() {
     });
   }
 
+  const bestWindowsHeader = document.querySelector('.best-windows-header');
+  if (bestWindowsHeader) {
+    bestWindowsHeader.style.cursor = 'pointer';
+    bestWindowsHeader.title = 'Abrir resumen semanal en tabla';
+    bestWindowsHeader.addEventListener('click', () => {
+      calculateWeeklySummary();
+      const modal = document.getElementById('weeklyModal');
+      if (modal) modal.classList.add('active');
+    });
+  }
+
   const weeklyModalClose = document.getElementById('weeklyModalClose');
   if (weeklyModalClose) {
     weeklyModalClose.addEventListener('click', () => {
@@ -507,10 +518,8 @@ async function loadData(forceRefresh = false) {
 
     for (let bIdx = 0; bIdx < batches.length; bIdx++) {
       const batch = batches[bIdx];
-      const lats = batch.map(p => p.lat).join(',');
-      const lons = batch.map(p => p.lon).join(',');
-
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m,precipitation_probability,weather_code${modelParam}&forecast_days=5&timezone=Europe/Madrid`;
+      const daysParam = selectedModel === 'arome_france_hd' ? 2 : 5;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m,precipitation_probability,weather_code${modelParam}&forecast_days=${daysParam}&timezone=Europe/Madrid`;
 
       const data = await fetchBatchWithRetry(url, statusText);
       const dataArray = Array.isArray(data) ? data : [data];
@@ -790,7 +799,7 @@ function updateSpotCards() {
 // --- Calculador de Mejores Ventanas Automáticas (5 Días) ---
 function calculateBestWindows() {
   const primarySpot = getPrimarySpotData();
-  if (!primarySpot) return;
+  if (!primarySpot || !primarySpot.hourly) return;
 
   const hourly = primarySpot.hourly;
   const timeList = hourly.time;
@@ -799,14 +808,17 @@ function calculateBestWindows() {
   let currentWindow = null;
 
   for (let i = 0; i < timeList.length; i++) {
-    const speedKn = kmhToKnots(hourly.wind_speed_10m[i]);
-    const gustsKn = kmhToKnots(hourly.wind_gusts_10m[i]);
-    const dir = hourly.wind_direction_10m[i];
+    const rawSpeed = hourly.wind_speed_10m[i];
+    if (rawSpeed === null || rawSpeed === undefined || isNaN(rawSpeed)) continue;
+
+    const speedKn = kmhToKnots(rawSpeed);
+    const gustsKn = kmhToKnots(hourly.wind_gusts_10m[i] || rawSpeed);
+    const dir = hourly.wind_direction_10m[i] || 0;
     const dateObj = new Date(timeList[i]);
     const hour = dateObj.getHours();
 
-    const isDaylight = hour >= 9 && hour <= 21;
-    const isGoodWind = speedKn >= 12 && speedKn <= 28;
+    const isDaylight = hour >= 8 && hour <= 21;
+    const isGoodWind = speedKn >= 8;
 
     if (isDaylight && isGoodWind) {
       if (!currentWindow) {
@@ -828,7 +840,7 @@ function calculateBestWindows() {
       }
     } else {
       if (currentWindow) {
-        if (currentWindow.speeds.length >= 2) {
+        if (currentWindow.speeds.length >= 1) {
           windows.push(currentWindow);
         }
         currentWindow = null;
@@ -836,8 +848,34 @@ function calculateBestWindows() {
     }
   }
 
-  if (currentWindow && currentWindow.speeds.length >= 2) {
+  if (currentWindow && currentWindow.speeds.length >= 1) {
     windows.push(currentWindow);
+  }
+
+  // Fallback si la semana tiene muy poco viento: seleccionar las 3 horas pico
+  if (windows.length === 0) {
+    const hourScores = [];
+    for (let i = 0; i < timeList.length; i++) {
+      const sp = kmhToKnots(hourly.wind_speed_10m[i] || 0);
+      hourScores.push({ index: i, speed: sp });
+    }
+    hourScores.sort((a, b) => b.speed - a.speed);
+    const topHours = hourScores.slice(0, 3);
+    topHours.forEach(item => {
+      const i = item.index;
+      const sp = item.speed;
+      const gt = kmhToKnots(hourly.wind_gusts_10m[i] || 0);
+      const dr = hourly.wind_direction_10m[i] || 0;
+      windows.push({
+        startIndex: i,
+        endIndex: i,
+        speeds: [sp],
+        gusts: [gt],
+        dirs: [dr],
+        startTime: timeList[i],
+        endTime: timeList[i]
+      });
+    });
   }
 
   const scoredWindows = windows.map(w => {
@@ -847,14 +885,23 @@ function calculateBestWindows() {
     const gustInfo = getGustFactor(avgSpeed, avgGusts);
     const mainDir = getDirectionName(w.dirs[Math.floor(w.dirs.length / 2)]);
 
-    let qualityClass = 'c-ideal-soft';
-    let qualityText = 'Ideal Suave';
-    if (avgSpeed >= 16 && avgSpeed <= 20) {
+    let qualityClass = 'c-calm';
+    let qualityText = 'Flojo (<8kn)';
+    if (avgSpeed >= 8 && avgSpeed < 12) {
+      qualityClass = 'c-light';
+      qualityText = 'Suave (8-12kn)';
+    } else if (avgSpeed >= 12 && avgSpeed < 16) {
+      qualityClass = 'c-ideal-soft';
+      qualityText = 'Ideal Suave';
+    } else if (avgSpeed >= 16 && avgSpeed <= 20) {
       qualityClass = 'c-ideal-strong';
       qualityText = 'Ideal Fuerte';
-    } else if (avgSpeed > 20) {
+    } else if (avgSpeed > 20 && avgSpeed <= 25) {
       qualityClass = 'c-strong';
       qualityText = 'Fuerte';
+    } else if (avgSpeed > 25) {
+      qualityClass = 'c-extreme';
+      qualityText = 'Muy Fuerte';
     }
 
     const startDate = new Date(w.startTime);
@@ -866,7 +913,7 @@ function calculateBestWindows() {
     return {
       startIndex: w.startIndex,
       dayName,
-      hoursText: `${startHourStr}–${endHourStr}`,
+      hoursText: duration === 1 ? startHourStr : `${startHourStr}–${endHourStr}`,
       avgSpeed: Math.round(avgSpeed),
       duration,
       mainDir,
@@ -911,17 +958,27 @@ function jumpToHour(hourIndex) {
   updateVisualization();
 }
 
-// --- Calculador de Resumen Semanal (Tabla 5 Días) ---
+// --- Calculador de Resumen Semanal (Tabla 48h o 5 Días según Modelo) ---
 function calculateWeeklySummary() {
   const primarySpot = getPrimarySpotData();
-  if (!primarySpot) return;
+  if (!primarySpot || !primarySpot.hourly || !primarySpot.hourly.time) return;
 
   const hourly = primarySpot.hourly;
   const daysMap = [];
+  const totalAvailableDays = Math.min(Math.ceil(hourly.time.length / 24), 5);
 
-  for (let d = 0; d < 5; d++) {
+  const weeklyTitle = document.querySelector('#weeklyModal h2');
+  if (weeklyTitle) {
+    weeklyTitle.textContent = totalAvailableDays <= 2 
+      ? `Resumen AROME HD (${hourly.time.length} Horas / ${totalAvailableDays} Días)`
+      : `Resumen Semanal de Wingfoil (${totalAvailableDays} Días)`;
+  }
+
+  for (let d = 0; d < totalAvailableDays; d++) {
     const startIndex = d * 24;
     const endIndex = Math.min((d + 1) * 24, hourly.time.length);
+    if (startIndex >= hourly.time.length) break;
+
     const dayTime = hourly.time[startIndex];
     const dateObj = new Date(dayTime);
     const dayName = dateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
