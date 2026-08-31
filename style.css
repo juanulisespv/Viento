@@ -114,6 +114,57 @@ body {
   gap: 16px;
 }
 
+/* Zone Selector Styling */
+.zone-selector-container {
+  position: relative;
+}
+
+.zone-select {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1.5px solid var(--accent-blue);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  transition: all 0.2s ease;
+  max-width: 280px;
+}
+
+.zone-select:hover, .zone-select:focus {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+  background: rgba(30, 41, 59, 1);
+}
+
+.zone-select optgroup {
+  background: #0f172a;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.zone-select option {
+  background: #1e293b;
+  color: #f8fafc;
+  font-weight: 500;
+  padding: 6px;
+}
+
+.spot-notes {
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding: 6px 10px;
+  margin-top: 8px;
+  border-radius: 6px;
+  line-height: 1.35;
+}
+
 .gif-btn {
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(56, 189, 248, 0.2));
   border: 1px solid var(--accent-purple);

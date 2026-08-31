@@ -1,46 +1,131 @@
 /**
- * Previsión de Viento para Ullíbarri-Gamboa y Urrunaga (Foco exclusivo en los Embalses)
- * Incluye: Mejores Ventanas Automáticas, Factor de Ráfagas, Resumen Semanal y Caché Inteligente por Modelo.
+ * Previsión de Viento Modular para Embalses y Spots de Costa (Wingfoil / Windsurf)
+ * Incluye: Múltiples Zonas Seleccionables, Cuadrícula Densa Auto-calculada por Coordenadas,
+ * Mejores Ventanas Automáticas, Resumen Semanal y Caché por Zona/Modelo.
  */
 
-// --- Configuración y Constantes ---
-const SPOTS = [
-  { id: 'garaio', name: 'Garaio (Club Náutico)', lat: 42.9062, lon: -2.5449 },
-  { id: 'landa', name: 'Landa (Playa / Norte)', lat: 42.9433, lon: -2.5933 },
-  { id: 'urrunaga', name: 'Urrunaga (Legutio)', lat: 42.9720, lon: -2.6543 }
+// --- Registro Modular de Zonas y Spots ---
+const SPOT_REGIONS = [
+  {
+    id: 'ullibarri',
+    name: 'Ullíbarri & Urrunaga (Álava)',
+    title: 'Viento Llanada Alavesa',
+    subtitle: 'Ullíbarri-Gamboa & Urrunaga — Wingfoil & Windsurf',
+    spots: [
+      { id: 'garaio', name: 'Garaio (Club Náutico)', lat: 42.9062, lon: -2.5449, notes: 'Acceso fácil por el club. Térmico limpio N/NW en verano.' },
+      { id: 'landa', name: 'Landa (Playa / Norte)', lat: 42.9433, lon: -2.5933, notes: 'Playa norte de Ullíbarri-Gamboa.' },
+      { id: 'urrunaga', name: 'Urrunaga (Legutio)', lat: 42.9720, lon: -2.6543, notes: 'Embalse de Legutio. Buena entrada con frentes W/NW.' }
+    ]
+  },
+  {
+    id: 'ebro',
+    name: 'Embalse del Ebro (Arija & Cabañas)',
+    title: 'Embalse del Ebro',
+    subtitle: 'Arija & Cabañas de Virtus — Térmico N/NE (15–25 kn)',
+    spots: [
+      { id: 'arija', name: 'Arija (Embalse del Ebro)', lat: 42.9934, lon: -3.9486, notes: 'Térmico N/NE (15-25kn) y frentes W/SW. Chop moderado, orilla arenosa muy segura. Ideal para progresar con W945.' },
+      { id: 'cabanas', name: 'Cabañas de Virtus', lat: 42.9868, lon: -3.8711, notes: 'Frentes W/SW y téemico N/NE constante.' }
+    ]
+  },
+  {
+    id: 'yesa',
+    name: 'Embalse de Yesa (Navarra)',
+    title: 'Embalse de Yesa',
+    subtitle: 'Yesa (Navarra) — Cierzo (NW) Encañonado',
+    spots: [
+      { id: 'yesa', name: 'Embalse de Yesa', lat: 42.6175, lon: -1.1897, notes: 'Cierzo (NW) encañonado con fuerza y racheado. Agua plana a chop corto. Ojo con cambios de nivel y piedras/barro.' }
+    ]
+  },
+  {
+    id: 'regaton',
+    name: 'Playa del Regatón (Laredo)',
+    title: 'Ría de Treto / Laredo',
+    subtitle: 'Playa del Regatón — Agua Plana en Ría',
+    spots: [
+      { id: 'regaton', name: 'Playa del Regatón (Laredo)', lat: 43.4072, lon: -3.4475, notes: 'Térmico NE o SW/NW. Agua plana en ría. Consultar mareas (funciona con media marea subiendo para mástil 72cm).' }
+    ]
+  },
+  {
+    id: 'ereaga',
+    name: 'El Abra / Ereaga (Getxo)',
+    title: 'El Abra / Getxo',
+    subtitle: 'Playa de Ereaga — Resguardo de Temporales NW',
+    spots: [
+      { id: 'ereaga', name: 'Playa de Ereaga (Getxo)', lat: 43.3486, lon: -3.0134, notes: 'NW fuerte o W. Zona resguardada tras el espigón. Ideal cuando en el interior no hay viento.' }
+    ]
+  },
+  {
+    id: 'chingudi',
+    name: 'Bahía de Txingudi (Hondarribia)',
+    title: 'Bahía de Txingudi',
+    subtitle: 'Hondarribia / Hendaya — Transiciones en Agua Plana',
+    spots: [
+      { id: 'chingudi', name: 'Bahía de Txingudi (Hondarribia)', lat: 43.3642, lon: -1.7820, notes: 'NW, N o W. Bahía cerrada con agua plana. Ojo con corrientes de marea en el canal central.' }
+    ]
+  }
 ];
 
-// Bounding Box enfocado en los embalses (~13x13 km)
-const BBOX = {
-  minLat: 42.84,  // Sur: Durana / Vitoria Norte
-  maxLat: 43.05,  // Norte: Otxandio / Embalse Urrunaga norte
-  minLon: -2.73,  // Oeste: Legutio / Gorbea
-  maxLon: -2.47   // Este: Brazo oriental de Ullíbarri (Azua, Ozaeta)
-};
-
-// 196 Puntos REALES de Open-Meteo (1 Petición HTTP Única)
+// Grid de resolución Open-Meteo (14x14 = 196 puntos por zona)
 const API_GRID_ROWS = 14;
 const API_GRID_COLS = 14;
 
-const CACHE_KEY = 'viento_llanada_data_v14_spots3';
-const CACHE_MODEL_RUN_KEY = 'viento_llanada_model_run_v14';
-
 // --- Estado Global ---
+let selectedRegionId = 'ullibarri';
 let rawApiPoints = [];
 let spotDataStore = {};
 let currentHourIndex = 0;
 let selectedUnit = 'knots';
-let selectedModel = 'arome_france_hd'; // 🇫🇷 AROME HD (1.3km Météo-France) por defecto
+let selectedModel = 'arome_france_hd'; // 🇫🇷 AROME HD por defecto
 let isPlaying = false;
 let playInterval = null;
 let map = null;
 let gridMarkers = [];
 let spotMarkers = [];
 
+// --- Helpers para Obtener Región / Spots / BBOX ---
+function getCurrentRegion() {
+  return SPOT_REGIONS.find(r => r.id === selectedRegionId) || SPOT_REGIONS[0];
+}
+
+function getCurrentSpots() {
+  return getCurrentRegion().spots;
+}
+
+function calculateCurrentBBox() {
+  const region = getCurrentRegion();
+  const lats = region.spots.map(s => s.lat);
+  const lons = region.spots.map(s => s.lon);
+
+  let minLat = Math.min(...lats);
+  let maxLat = Math.max(...lats);
+  let minLon = Math.min(...lons);
+  let maxLon = Math.max(...lons);
+
+  let latSpan = maxLat - minLat;
+  let lonSpan = maxLon - minLon;
+
+  const minLatSpan = 0.11;
+  const minLonSpan = 0.15;
+
+  const targetLatSpan = Math.max(latSpan * 1.6, minLatSpan);
+  const targetLonSpan = Math.max(lonSpan * 1.6, minLonSpan);
+
+  const midLat = (minLat + maxLat) / 2;
+  const midLon = (minLon + maxLon) / 2;
+
+  return {
+    minLat: parseFloat((midLat - targetLatSpan / 2).toFixed(4)),
+    maxLat: parseFloat((midLat + targetLatSpan / 2).toFixed(4)),
+    minLon: parseFloat((midLon - targetLonSpan / 2).toFixed(4)),
+    maxLon: parseFloat((midLon + targetLonSpan / 2).toFixed(4))
+  };
+}
+
 // --- Inicialización ---
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
   initEventListeners();
+  renderSpotCards();
   loadData();
 });
 
@@ -64,11 +149,18 @@ function initMap() {
     crossOrigin: 'anonymous'
   });
 
+  const bbox = calculateCurrentBBox();
+
   map = L.map('map', {
     zoomControl: false,
     attributionControl: false,
     layers: [esriDark]
-  }).setView([42.945, -2.60], 11.5);
+  });
+
+  map.fitBounds([
+    [bbox.minLat, bbox.minLon],
+    [bbox.maxLat, bbox.maxLon]
+  ], { padding: [20, 20] });
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -84,7 +176,19 @@ function initMap() {
     .addAttribution('&copy; <a href="https://open-meteo.com/">Open-Meteo API</a>')
     .addTo(map);
 
-  SPOTS.forEach(spot => {
+  renderSpotMarkersOnMap();
+
+  map.on('zoomend moveend', () => {
+    renderGridMarkers();
+  });
+}
+
+function renderSpotMarkersOnMap() {
+  spotMarkers.forEach(m => map.removeLayer(m.marker));
+  spotMarkers = [];
+
+  const spots = getCurrentSpots();
+  spots.forEach(spot => {
     const customIcon = L.divIcon({
       className: 'spot-marker-wrapper',
       html: `<div class="spot-marker-icon" id="markerIcon_${spot.id}">
@@ -98,10 +202,29 @@ function initMap() {
     marker.on('click', () => openSpotModal(spot.id));
     spotMarkers.push({ spotId: spot.id, marker });
   });
+}
 
-  map.on('zoomend moveend', () => {
-    renderGridMarkers();
-  });
+// --- Renderizado Dinámico de Tarjetas de Spots ---
+function renderSpotCards() {
+  const container = document.getElementById('spotsContainer');
+  if (!container) return;
+
+  const spots = getCurrentSpots();
+  container.innerHTML = spots.map(spot => `
+    <div class="spot-card" id="spotCard_${spot.id}" onclick="openSpotModal('${spot.id}')">
+      <div class="spot-header">
+        <h3>${spot.name}</h3>
+        <span class="spot-badge" id="badge_${spot.id}">-- kn</span>
+      </div>
+      <div class="spot-details">
+        <div class="stat"><span class="lbl">Viento:</span> <strong id="wind_${spot.id}">--</strong></div>
+        <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gust_${spot.id}">--</strong></div>
+        <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactor_${spot.id}">--</strong></div>
+        <div class="stat"><span class="lbl">Dir:</span> <strong id="dir_${spot.id}">--</strong></div>
+      </div>
+      ${spot.notes ? `<div class="spot-notes">💡 ${spot.notes}</div>` : ''}
+    </div>
+  `).join('');
 }
 
 // --- Event Listeners ---
@@ -111,6 +234,14 @@ function initEventListeners() {
     currentHourIndex = parseInt(e.target.value, 10);
     updateVisualization();
   });
+
+  // Listener para el selector de zona
+  const zoneSelect = document.getElementById('zoneSelect');
+  if (zoneSelect) {
+    zoneSelect.addEventListener('change', (e) => {
+      switchRegion(e.target.value);
+    });
+  }
 
   document.getElementById('playBtn').addEventListener('click', togglePlay);
 
@@ -172,31 +303,53 @@ function initEventListeners() {
     }
   });
 
-  document.getElementById('spotCardGaraio').addEventListener('click', () => openSpotModal('garaio'));
-  document.getElementById('spotCardLanda').addEventListener('click', () => openSpotModal('landa'));
-  document.getElementById('spotCardUrrunaga').addEventListener('click', () => openSpotModal('urrunaga'));
-
   document.getElementById('modalClose').addEventListener('click', closeSpotModal);
   document.getElementById('spotModal').addEventListener('click', (e) => {
     if (e.target.id === 'spotModal') closeSpotModal();
   });
 }
 
+// --- Cambio de Zona / Región ---
+function switchRegion(regionId) {
+  if (selectedRegionId === regionId) return;
+  selectedRegionId = regionId;
+
+  const region = getCurrentRegion();
+
+  const appTitle = document.getElementById('appTitle');
+  const appSubtitle = document.getElementById('appSubtitle');
+  if (appTitle) appTitle.textContent = region.title;
+  if (appSubtitle) appSubtitle.textContent = region.subtitle;
+
+  const bbox = calculateCurrentBBox();
+  map.flyToBounds([
+    [bbox.minLat, bbox.minLon],
+    [bbox.maxLat, bbox.maxLon]
+  ], { padding: [30, 30], duration: 1.2 });
+
+  renderSpotMarkersOnMap();
+  renderSpotCards();
+  loadData(true);
+}
+
 // --- Generar Coordenadas ---
 function generateSamplingCoordinates() {
   const points = [];
-  const latStep = (BBOX.maxLat - BBOX.minLat) / (API_GRID_ROWS - 1);
-  const lonStep = (BBOX.maxLon - BBOX.minLon) / (API_GRID_COLS - 1);
+  const bbox = calculateCurrentBBox();
+  const spots = getCurrentSpots();
+
+  const latStep = (bbox.maxLat - bbox.minLat) / (API_GRID_ROWS - 1);
+  const lonStep = (bbox.maxLon - bbox.minLon) / (API_GRID_COLS - 1);
 
   for (let i = 0; i < API_GRID_ROWS; i++) {
     for (let j = 0; j < API_GRID_COLS; j++) {
-      const lat = parseFloat((BBOX.minLat + i * latStep).toFixed(4));
-      const lon = parseFloat((BBOX.minLon + j * lonStep).toFixed(4));
+      const lat = parseFloat((bbox.minLat + i * latStep).toFixed(4));
+      const lon = parseFloat((bbox.minLon + j * lonStep).toFixed(4));
       points.push({ lat, lon, r: i, c: j });
     }
   }
 
-  SPOTS.forEach(spot => points.push({ lat: spot.lat, lon: spot.lon, isSpot: spot.id }));
+  spots.forEach(spot => points.push({ lat: spot.lat, lon: spot.lon, isSpot: spot.id }));
 
   return points;
 }
@@ -239,13 +392,13 @@ function getLatestModelRun() {
   return `${dateStr}_${latestRunHour.toString().padStart(2, '0')}UTC`;
 }
 
-// --- Carga de Datos Resiliente con Caché por Modelo ---
+// --- Carga de Datos Resiliente con Caché por Modelo y Región ---
 async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_llanada_data_v15_${selectedModel}`;
-  const cacheModelRunKey = `viento_llanada_model_run_v15_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v16_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v16_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -278,7 +431,7 @@ async function loadData(forceRefresh = false) {
 
   try {
     const points = generateSamplingCoordinates();
-    const BATCH_SIZE = 250; // 1 sola petición HTTP para todos los embalses
+    const BATCH_SIZE = 250; // 1 sola petición HTTP por zona
     const batches = [];
     for (let i = 0; i < points.length; i += BATCH_SIZE) {
       batches.push(points.slice(i, i + BATCH_SIZE));
@@ -463,7 +616,7 @@ function renderGridMarkers() {
 
   const densityBadge = document.getElementById('densityBadge');
   if (densityBadge) {
-    densityBadge.textContent = `${visiblePoints.length} flechas API • Cobertura Total Embalses (~900m)`;
+    densityBadge.textContent = `${visiblePoints.length} flechas API • Cobertura Densa (~900m)`;
   }
 
   visiblePoints.forEach(point => {
@@ -516,13 +669,21 @@ function getGustFactor(speedKn, gustsKn) {
   return { ratio, text: 'Muy Racheado', class: 'gust-extreme' };
 }
 
-// --- Actualizar Spot Overlay Cards ---
+// Helper para obtener datos del spot primario
+function getPrimarySpotData() {
+  const spots = getCurrentSpots();
+  for (const s of spots) {
+    if (spotDataStore[s.id]) return spotDataStore[s.id];
+  }
+  return Object.values(spotDataStore)[0];
+}
+
+// --- Actualizar Spot Overlay Cards Dinámicamente ---
 function updateSpotCards() {
-  SPOTS.forEach(spot => {
+  const spots = getCurrentSpots();
+  spots.forEach(spot => {
     const spotData = spotDataStore[spot.id];
     if (!spotData) return;
-
-    const capId = spot.id.charAt(0).toUpperCase() + spot.id.slice(1);
 
     const speedKmh = spotData.hourly.wind_speed_10m[currentHourIndex];
     const gustsKmh = spotData.hourly.wind_gusts_10m[currentHourIndex];
@@ -532,11 +693,11 @@ function updateSpotCards() {
     const gustsKn = kmhToKnots(gustsKmh);
     const color = getWingfoilColor(speedKn);
 
-    const badge = document.getElementById(`badge${capId}`);
-    const windEl = document.getElementById(`wind${capId}`);
-    const gustEl = document.getElementById(`gust${capId}`);
-    const gustFactorEl = document.getElementById(`gustFactor${capId}`);
-    const dirEl = document.getElementById(`dir${capId}`);
+    const badge = document.getElementById(`badge_${spot.id}`);
+    const windEl = document.getElementById(`wind_${spot.id}`);
+    const gustEl = document.getElementById(`gust_${spot.id}`);
+    const gustFactorEl = document.getElementById(`gustFactor_${spot.id}`);
+    const dirEl = document.getElementById(`dir_${spot.id}`);
 
     const displaySpeed = selectedUnit === 'knots' ? `${Math.round(speedKn)} kn` : `${Math.round(speedKmh)} km/h`;
     const displayGusts = selectedUnit === 'knots' ? `${Math.round(gustsKn)} kn` : `${Math.round(gustsKmh)} km/h`;
@@ -564,7 +725,7 @@ function updateSpotCards() {
 
 // --- Calculador de Mejores Ventanas Automáticas (5 Días) ---
 function calculateBestWindows() {
-  const primarySpot = spotDataStore['garaio'] || spotDataStore['landa'] || Object.values(spotDataStore)[0];
+  const primarySpot = getPrimarySpotData();
   if (!primarySpot) return;
 
   const hourly = primarySpot.hourly;
@@ -688,7 +849,7 @@ function jumpToHour(hourIndex) {
 
 // --- Calculador de Resumen Semanal (Tabla 5 Días) ---
 function calculateWeeklySummary() {
-  const primarySpot = spotDataStore['garaio'] || spotDataStore['landa'] || Object.values(spotDataStore)[0];
+  const primarySpot = getPrimarySpotData();
   if (!primarySpot) return;
 
   const hourly = primarySpot.hourly;
@@ -781,11 +942,17 @@ function renderWeeklyTable(days) {
 
 // --- Modal de Previsión Detallada ---
 function openSpotModal(spotId) {
-  const spot = SPOTS.find(s => s.id === spotId);
+  let spot = null;
+  for (const reg of SPOT_REGIONS) {
+    const found = reg.spots.find(s => s.id === spotId);
+    if (found) { spot = found; break; }
+  }
   const spotData = spotDataStore[spotId];
   if (!spot || !spotData) return;
 
   document.getElementById('modalTitle').textContent = spot.name;
+  const modalSub = document.getElementById('modalSubtitle');
+  if (modalSub) modalSub.textContent = spot.notes || 'Previsión horaria para las próximas 24h';
 
   const currentSpeedKn = kmhToKnots(spotData.hourly.wind_speed_10m[currentHourIndex]);
   const wingStatus = getWingfoilStatusText(currentSpeedKn);
@@ -937,7 +1104,8 @@ async function exportGif(modeHours = 24) {
       ctx.fillRect(0, 0, width, 36);
       ctx.fillStyle = '#38bdf8';
       ctx.font = 'bold 12px Inter, system-ui, sans-serif';
-      ctx.fillText('Viento Embalses Llanada Alavesa', 10, 23);
+      const activeRegion = getCurrentRegion();
+      ctx.fillText(`Viento - ${activeRegion.name}`, 10, 23);
       ctx.fillStyle = '#f8fafc';
       ctx.font = 'bold 11px Inter, system-ui, sans-serif';
       ctx.textAlign = 'right';
@@ -961,8 +1129,9 @@ async function exportGif(modeHours = 24) {
         }
       });
 
-      // Spot labels
-      SPOTS.forEach(spot => {
+      // Spot labels dinámicos
+      const currentSpots = getCurrentSpots();
+      currentSpots.forEach(spot => {
         const spotPx = map.latLngToContainerPoint([spot.lat, spot.lon]);
         const x = (spotPx.x / mapSize.x) * width;
         const y = 36 + (spotPx.y / mapSize.y) * (height - 62);
@@ -976,10 +1145,10 @@ async function exportGif(modeHours = 24) {
           ctx.stroke();
           const spotData = spotDataStore[spot.id];
           const speedKn = spotData ? kmhToKnots(spotData.hourly.wind_speed_10m[targetHourIndex]) : 0;
-          const name = spot.id === 'garaio' ? 'Garaio' : spot.id === 'landa' ? 'Landa' : 'Urrunaga';
+          const shortName = spot.name.split(' ')[0];
           ctx.fillStyle = '#fff';
           ctx.font = 'bold 9px Inter, sans-serif';
-          ctx.fillText(`${name} ${Math.round(speedKn)}kn`, x + 8, y + 3);
+          ctx.fillText(`${shortName} ${Math.round(speedKn)}kn`, x + 8, y + 3);
         }
       });
 

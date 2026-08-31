@@ -43,12 +43,27 @@
           </svg>
         </div>
         <div>
-          <h1>Viento Llanada Alavesa</h1>
-          <p class="subtitle">Ullíbarri-Gamboa & Urrunaga — Wingfoil & Windsurf</p>
+          <h1 id="appTitle">Viento Embalses & Spots</h1>
+          <p class="subtitle" id="appSubtitle">Previsión y Cuadrícula Densa para Wingfoil</p>
         </div>
       </div>
 
       <div class="header-actions">
+        <div class="zone-selector-container">
+          <select id="zoneSelect" class="zone-select" title="Seleccionar Spot o Embalse">
+            <optgroup label="💧 Embalses (Agua Dulce)">
+              <option value="ullibarri" selected>📍 Ullíbarri & Urrunaga (Álava)</option>
+              <option value="ebro">📍 Embalse del Ebro (Arija & Cabañas)</option>
+              <option value="yesa">📍 Embalse de Yesa (Navarra)</option>
+            </optgroup>
+            <optgroup label="🌊 Costa & Rías (Aguas Protegidas)">
+              <option value="regaton">📍 Playa del Regatón (Laredo / Ría)</option>
+              <option value="ereaga">📍 El Abra / Ereaga (Getxo)</option>
+              <option value="chingudi">📍 Bahía de Txingudi (Hondarribia)</option>
+            </optgroup>
+          </select>
+        </div>
+
         <button class="weekly-btn" id="weeklyBtn" title="Resumen de la semana en tabla">
           📊 <span>Resumen 5 Días</span>
         </button>
@@ -64,7 +79,7 @@
         </div>
 
         <div class="model-toggle" id="modelToggle">
-          <button class="model-btn active" data-model="arome_france_hd" title="AROME HD (1.3 km Météo-France) — Máxima precisión en Álava (48h)">🇫🇷 AROME 1.3k</button>
+          <button class="model-btn active" data-model="arome_france_hd" title="AROME HD (1.3 km Météo-France) — Máxima precisión (48h)">🇫🇷 AROME 1.3k</button>
           <button class="model-btn" data-model="icon_eu" title="ICON-EU (7 km DWD Alemania) — 5 Días">🇩🇪 ICON 7k</button>
           <button class="model-btn" data-model="best_match" title="Best Match (Open-Meteo Combinado) — 5 Días">🌐 Global</button>
         </div>
@@ -110,47 +125,8 @@
 
       <!-- Left Column Overlay (Spot Cards + Mejores Ventanas) -->
       <div class="map-overlay-column left-column">
-        <!-- Quick Spot Cards Overlay -->
-        <div class="spots-overlay">
-          <div class="spot-card" id="spotCardGaraio">
-            <div class="spot-header">
-              <h3>Garaio (Club Náutico)</h3>
-              <span class="spot-badge" id="badgeGaraio">-- kn</span>
-            </div>
-            <div class="spot-details">
-              <div class="stat"><span class="lbl">Viento:</span> <strong id="windGaraio">--</strong></div>
-              <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gustGaraio">--</strong></div>
-              <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactorGaraio">--</strong></div>
-              <div class="stat"><span class="lbl">Dir:</span> <strong id="dirGaraio">--</strong></div>
-            </div>
-          </div>
-
-          <div class="spot-card" id="spotCardLanda">
-            <div class="spot-header">
-              <h3>Landa (Playa)</h3>
-              <span class="spot-badge" id="badgeLanda">-- kn</span>
-            </div>
-            <div class="spot-details">
-              <div class="stat"><span class="lbl">Viento:</span> <strong id="windLanda">--</strong></div>
-              <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gustLanda">--</strong></div>
-              <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactorLanda">--</strong></div>
-              <div class="stat"><span class="lbl">Dir:</span> <strong id="dirLanda">--</strong></div>
-            </div>
-          </div>
-
-          <div class="spot-card" id="spotCardUrrunaga">
-            <div class="spot-header">
-              <h3>Urrunaga</h3>
-              <span class="spot-badge" id="badgeUrrunaga">-- kn</span>
-            </div>
-            <div class="spot-details">
-              <div class="stat"><span class="lbl">Viento:</span> <strong id="windUrrunaga">--</strong></div>
-              <div class="stat"><span class="lbl">Ráfagas:</span> <strong id="gustUrrunaga">--</strong></div>
-              <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactorUrrunaga">--</strong></div>
-              <div class="stat"><span class="lbl">Dir:</span> <strong id="dirUrrunaga">--</strong></div>
-            </div>
-          </div>
-        </div>
+        <!-- Quick Spot Cards Overlay (Dinámico) -->
+        <div class="spots-overlay" id="spotsContainer"></div>
 
         <!-- Best Windows Panel Overlay (Mejores Ventanas) -->
         <div class="best-windows-overlay" id="bestWindowsOverlay">
