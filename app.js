@@ -222,7 +222,7 @@ function renderSpotCards() {
         <div class="stat"><span class="lbl">Racheado:</span> <strong id="gustFactor_${spot.id}">--</strong></div>
         <div class="stat"><span class="lbl">Dir:</span> <strong id="dir_${spot.id}">--</strong></div>
       </div>
-      ${spot.notes ? `<div class="spot-notes">💡 ${spot.notes}</div>` : ''}
+      ${spot.notes ? `<div class="spot-notes">Info: ${spot.notes}</div>` : ''}
     </div>
   `).join('');
 }
@@ -873,9 +873,9 @@ function renderBestWindows(topWindows) {
         <span class="window-quality ${w.qualityClass}">${w.qualityText}</span>
       </div>
       <div class="window-details">
-        <span>💨 <strong>${w.avgSpeed} kn</strong></span>
-        <span>🧭 <strong>${w.mainDir}</strong></span>
-        <span>📊 ${w.gustText}</span>
+        <span>Viento: <strong>${w.avgSpeed} kn</strong></span>
+        <span>Dir: <strong>${w.mainDir}</strong></span>
+        <span>Estabilidad: ${w.gustText}</span>
       </div>
     </div>
   `).join('');
@@ -1017,7 +1017,7 @@ function openSpotModal(spotId) {
   document.getElementById('modalWingStatus').textContent = wingStatus;
   document.getElementById('modalMaxWind').textContent = selectedUnit === 'knots' ? `${Math.round(maxWind)} kn` : `${Math.round(knotsToKmh(maxWind))} km/h`;
   document.getElementById('modalBestTime').textContent = bestHour;
-  document.getElementById('modalTempRain').textContent = `${Math.round(currentTemp)}°C / ☔ ${currentRain}%`;
+  document.getElementById('modalTempRain').textContent = `${Math.round(currentTemp)}°C / Lluvia: ${currentRain}%`;
 
   renderHourlyChart(spotData.hourly, startIndex, endIndex);
 
@@ -1219,7 +1219,7 @@ async function exportGif(modeHours = 24) {
       URL.revokeObjectURL(blobUrl);
     }, 3000);
 
-    statusText.textContent = '¡GIF Descargado! 🎉';
+    statusText.textContent = '¡GIF Descargado!';
     exportBtn.disabled = false;
     exportBtn.style.opacity = '1';
     setTimeout(() => { statusText.textContent = originalStatus; }, 4000);

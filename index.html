@@ -28,60 +28,54 @@
   <!-- GIF export: codificador GIF89a nativo integrado en app.js (sin dependencias externas) -->
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="style.css?v=16" />
+  <link rel="stylesheet" href="style.css?v=18" />
 </head>
 
 <body>
   <div class="app-container">
     <!-- Top Header -->
     <header class="top-header">
-      <div class="header-brand">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
-          </svg>
-        </div>
-        <div>
-          <h1 id="appTitle">Viento Embalses & Spots</h1>
-          <p class="subtitle" id="appSubtitle">Previsión y Cuadrícula Densa para Wingfoil</p>
-        </div>
+      <div class="zone-selector-container">
+        <select id="zoneSelect" class="zone-select" title="Seleccionar Spot o Embalse">
+          <optgroup label="Embalses (Agua Dulce)">
+            <option value="ullibarri" selected>Ullíbarri & Urrunaga (Álava)</option>
+            <option value="ebro">Embalse del Ebro (Arija & Cabañas)</option>
+            <option value="yesa">Embalse de Yesa (Navarra)</option>
+          </optgroup>
+          <optgroup label="Costa & Rías (Aguas Protegidas)">
+            <option value="regaton">Playa del Regatón (Laredo / Ría)</option>
+            <option value="ereaga">El Abra / Ereaga (Getxo)</option>
+            <option value="chingudi">Bahía de Txingudi (Hondarribia)</option>
+          </optgroup>
+        </select>
       </div>
 
       <div class="header-actions">
-        <div class="zone-selector-container">
-          <select id="zoneSelect" class="zone-select" title="Seleccionar Spot o Embalse">
-            <optgroup label="💧 Embalses (Agua Dulce)">
-              <option value="ullibarri" selected>📍 Ullíbarri & Urrunaga (Álava)</option>
-              <option value="ebro">📍 Embalse del Ebro (Arija & Cabañas)</option>
-              <option value="yesa">📍 Embalse de Yesa (Navarra)</option>
-            </optgroup>
-            <optgroup label="🌊 Costa & Rías (Aguas Protegidas)">
-              <option value="regaton">📍 Playa del Regatón (Laredo / Ría)</option>
-              <option value="ereaga">📍 El Abra / Ereaga (Getxo)</option>
-              <option value="chingudi">📍 Bahía de Txingudi (Hondarribia)</option>
-            </optgroup>
-          </select>
-        </div>
-
         <button class="weekly-btn" id="weeklyBtn" title="Resumen de la semana en tabla">
-          📊 <span>Resumen 5 Días</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 20V10M12 20V4M6 20v-6"/>
+          </svg>
+          <span>Resumen 5 Días</span>
         </button>
 
         <div class="gif-dropdown">
           <button class="gif-btn" id="exportGifBtn" title="Exportar GIF animado">
-            🎬 <span>Exportar GIF ▾</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m10 9 5 3-5 3V9z"/>
+            </svg>
+            <span>Exportar GIF ▾</span>
           </button>
           <div class="gif-menu" id="gifMenu">
-            <button class="gif-menu-item" id="export24hBtn">📅 GIF 24h (Día Actual)</button>
-            <button class="gif-menu-item" id="export120hBtn">🗓️ GIF 5 Días Completo (120h)</button>
+            <button class="gif-menu-item" id="export24hBtn">GIF 24h (Día Actual)</button>
+            <button class="gif-menu-item" id="export120hBtn">GIF 5 Días Completo (120h)</button>
           </div>
         </div>
 
         <div class="model-toggle" id="modelToggle">
-          <button class="model-btn active" data-model="arome_france_hd" title="AROME HD (1.3 km Météo-France) — Máxima precisión (48h)">🇫🇷 AROME 1.3k</button>
-          <button class="model-btn" data-model="icon_eu" title="ICON-EU (7 km DWD Alemania) — 5 Días">🇩🇪 ICON 7k</button>
-          <button class="model-btn" data-model="best_match" title="Best Match (Open-Meteo Combinado) — 5 Días">🌐 Global</button>
+          <button class="model-btn active" data-model="arome_france_hd" title="AROME HD (1.3 km Météo-France) — Máxima precisión (48h)">AROME 1.3k</button>
+          <button class="model-btn" data-model="icon_eu" title="ICON-EU (7 km DWD Alemania) — 5 Días">ICON 7k</button>
+          <button class="model-btn" data-model="best_match" title="Best Match (Open-Meteo Combinado) — 5 Días">Global</button>
         </div>
 
         <div class="unit-toggle" id="unitToggle">
@@ -95,7 +89,7 @@
         </div>
 
         <button class="refresh-btn" id="refreshBtn" title="Actualizar datos de Open-Meteo">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
           </svg>
@@ -131,7 +125,12 @@
         <!-- Best Windows Panel Overlay (Mejores Ventanas) -->
         <div class="best-windows-overlay" id="bestWindowsOverlay">
           <div class="best-windows-header">
-            <h4>🌟 Mejores Ventanas Wingfoil (5 Días)</h4>
+            <h4>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Mejores Ventanas Wingfoil (5 Días)
+            </h4>
           </div>
           <div class="best-windows-list" id="bestWindowsList">
             <div class="window-item-loading">Calculando ventanas óptimas...</div>
@@ -176,7 +175,7 @@
       <div class="spot-modal" id="weeklyModal">
         <div class="modal-content glass-card weekly-modal-content">
           <button class="modal-close" id="weeklyModalClose">&times;</button>
-          <h2>📊 Resumen Semanal de Wingfoil (5 Días)</h2>
+          <h2>Resumen Semanal de Wingfoil (5 Días)</h2>
           <p class="modal-sub">Visión general rápida para planificar tus sesiones de navegación</p>
 
           <div class="weekly-table-container">
@@ -205,7 +204,11 @@
     <footer class="time-control-bar glass-card">
       <div class="time-header">
         <div class="time-display">
-          <span class="time-icon">🕒</span>
+          <span class="time-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+          </span>
           <span class="current-date-time" id="currentDateTime">Cargando previsión...</span>
         </div>
 
@@ -234,7 +237,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- App JS -->
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>
