@@ -13,7 +13,7 @@ const SPOT_REGIONS = [
     subtitle: 'Ullíbarri-Gamboa & Urrunaga — Wingfoil & Windsurf',
     spots: [
       { id: 'garaio', name: 'Garaio (Club Náutico)', lat: 42.9062, lon: -2.5449, notes: 'Acceso fácil por el club. Térmico limpio N/NW en verano.' },
-      { id: 'landa', name: 'Landa (Playa / Norte)', lat: 42.9433, lon: -2.5933, notes: 'Playa norte de Ullíbarri-Gamboa.' },
+      { id: 'landa', name: 'Landa (Playa / Norte)', lat: 42.9433, lon: -2.5870, notes: 'Playa norte de Ullíbarri-Gamboa.' },
       { id: 'urrunaga', name: 'Urrunaga (Legutio)', lat: 42.9720, lon: -2.6543, notes: 'Embalse de Legutio. Buena entrada con frentes W/NW.' }
     ]
   },
@@ -265,16 +265,7 @@ function initEventListeners() {
     });
   }
 
-  const bestWindowsHeader = document.querySelector('.best-windows-header');
-  if (bestWindowsHeader) {
-    bestWindowsHeader.style.cursor = 'pointer';
-    bestWindowsHeader.title = 'Abrir resumen semanal en tabla';
-    bestWindowsHeader.addEventListener('click', () => {
-      calculateWeeklySummary();
-      const modal = document.getElementById('weeklyModal');
-      if (modal) modal.classList.add('active');
-    });
-  }
+  initCollapsiblePanels();
 
   const weeklyModalClose = document.getElementById('weeklyModalClose');
   if (weeklyModalClose) {
@@ -356,6 +347,55 @@ function initEventListeners() {
   if (spotModal) {
     spotModal.addEventListener('click', (e) => {
       if (e.target.id === 'spotModal') closeSpotModal();
+    });
+  }
+}
+
+// --- Control de Paneles Informativos Desplegables (Individual y Global) ---
+function initCollapsiblePanels() {
+  const panels = [
+    { id: 'spotsPanel', headerId: 'spotsPanelHeader' },
+    { id: 'bestWindowsPanel', headerId: 'bestWindowsPanelHeader' },
+    { id: 'legendPanel', headerId: 'legendPanelHeader' }
+  ];
+
+  panels.forEach(p => {
+    const panelEl = document.getElementById(p.id);
+    const headerEl = document.getElementById(p.headerId);
+    if (!panelEl || !headerEl) return;
+
+    // Cargar preferencia guardada en localStorage
+    const isCollapsed = localStorage.getItem(`panel_collapsed_${p.id}`) === 'true';
+    if (isCollapsed) {
+      panelEl.classList.add('collapsed');
+    }
+
+    headerEl.addEventListener('click', () => {
+      panelEl.classList.toggle('collapsed');
+      const nowCollapsed = panelEl.classList.contains('collapsed');
+      localStorage.setItem(`panel_collapsed_${p.id}`, nowCollapsed ? 'true' : 'false');
+    });
+  });
+
+  // Botón maestro para ocultar / mostrar todos los paneles informativos
+  const toggleAllBtn = document.getElementById('toggleAllPanelsBtn');
+  const mainContent = document.querySelector('.main-content');
+  if (toggleAllBtn && mainContent) {
+    const isHiddenGlobal = localStorage.getItem('panels_hidden_global') === 'true';
+    if (isHiddenGlobal) {
+      mainContent.classList.add('panels-hidden');
+      toggleAllBtn.classList.add('active');
+      const btnText = toggleAllBtn.querySelector('.btn-text');
+      if (btnText) btnText.textContent = 'Ver Cuadros';
+    }
+
+    toggleAllBtn.addEventListener('click', () => {
+      mainContent.classList.toggle('panels-hidden');
+      const isHidden = mainContent.classList.contains('panels-hidden');
+      toggleAllBtn.classList.toggle('active', isHidden);
+      const btnText = toggleAllBtn.querySelector('.btn-text');
+      if (btnText) btnText.textContent = isHidden ? 'Ver Cuadros' : 'Cuadros';
+      localStorage.setItem('panels_hidden_global', isHidden ? 'true' : 'false');
     });
   }
 }

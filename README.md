@@ -9,7 +9,7 @@ Aplicación web PWA interactiva para la predicción de viento y planificación d
 ## 📍 Spots de Navegación
 
 1. **Garaio (Club Náutico)**: `42.9062, -2.5449`
-2. **Landa (Playa / Norte)**: `42.9433, -2.5933`
+2. **Landa (Playa / Norte)**: `42.9433, -2.5870`
 3. **Urrunaga (Legutio)**: `42.9720, -2.6543`
 
 ---

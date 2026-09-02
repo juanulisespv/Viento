@@ -7,7 +7,7 @@ const SPOT_REGIONS = [
     name: 'Ullíbarri & Urrunaga (Álava)',
     spots: [
       { id: 'garaio', name: 'Garaio (Club Náutico)', lat: 42.9062, lon: -2.5449 },
-      { id: 'landa', name: 'Landa (Playa / Norte)', lat: 42.9433, lon: -2.5933 },
+      { id: 'landa', name: 'Landa (Playa / Norte)', lat: 42.9433, lon: -2.5870 },
       { id: 'urrunaga', name: 'Urrunaga (Legutio)', lat: 42.9720, lon: -2.6543 }
     ]
   },

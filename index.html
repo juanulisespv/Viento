@@ -59,6 +59,14 @@
           <span>Resumen 5 Días</span>
         </button>
 
+        <button class="toggle-all-panels-btn" id="toggleAllPanelsBtn" title="Ocultar / Mostrar todos los cuadros informativos">
+          <svg class="eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span class="btn-text">Cuadros</span>
+        </button>
+
         <div class="gif-dropdown">
           <button class="gif-btn" id="exportGifBtn" title="Exportar GIF animado">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -105,36 +113,69 @@
       <div id="map" class="map-view"></div>
 
       <!-- Floating Legend Overlay -->
-      <div class="map-overlay legend-overlay">
-        <div class="density-badge" id="densityBadge">Calculando densidad...</div>
-        <h4>Intensidad Viento Wingfoil</h4>
-        <div class="legend-scale">
-          <div class="legend-item"><span class="color-box c-calm"></span> &lt; 8 kn Flojo</div>
-          <div class="legend-item"><span class="color-box c-light"></span> 8 - 12 kn Suave</div>
-          <div class="legend-item"><span class="color-box c-ideal-soft"></span> 12 - 16 kn Ideal Suave</div>
-          <div class="legend-item"><span class="color-box c-ideal-strong"></span> 16 - 20 kn Ideal Fuerte</div>
-          <div class="legend-item"><span class="color-box c-strong"></span> 20 - 25 kn Fuerte</div>
-          <div class="legend-item"><span class="color-box c-extreme"></span> &gt; 25 kn Muy Fuerte</div>
+      <div class="map-overlay legend-overlay collapsible-panel" id="legendPanel">
+        <div class="panel-header" id="legendPanelHeader">
+          <h4>Intensidad Viento</h4>
+          <button class="panel-collapse-btn" title="Desplegar u ocultar leyenda" aria-label="Desplegar u ocultar leyenda">
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="density-badge" id="densityBadge">Calculando densidad...</div>
+          <div class="legend-scale">
+            <div class="legend-item"><span class="color-box c-calm"></span> &lt; 8 kn Flojo</div>
+            <div class="legend-item"><span class="color-box c-light"></span> 8 - 12 kn Suave</div>
+            <div class="legend-item"><span class="color-box c-ideal-soft"></span> 12 - 16 kn Ideal Suave</div>
+            <div class="legend-item"><span class="color-box c-ideal-strong"></span> 16 - 20 kn Ideal Fuerte</div>
+            <div class="legend-item"><span class="color-box c-strong"></span> 20 - 25 kn Fuerte</div>
+            <div class="legend-item"><span class="color-box c-extreme"></span> &gt; 25 kn Muy Fuerte</div>
+          </div>
         </div>
       </div>
 
       <!-- Left Column Overlay (Spot Cards + Mejores Ventanas) -->
       <div class="map-overlay-column left-column">
         <!-- Quick Spot Cards Overlay (Dinámico) -->
-        <div class="spots-overlay" id="spotsContainer"></div>
+        <div class="spots-overlay-wrapper collapsible-panel glass-card" id="spotsPanel">
+          <div class="panel-header" id="spotsPanelHeader">
+            <h4>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              Spots de la Zona
+            </h4>
+            <button class="panel-collapse-btn" title="Desplegar u ocultar spots" aria-label="Desplegar u ocultar spots">
+              <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="panel-body">
+            <div class="spots-overlay" id="spotsContainer"></div>
+          </div>
+        </div>
 
         <!-- Best Windows Panel Overlay (Mejores Ventanas) -->
-        <div class="best-windows-overlay" id="bestWindowsOverlay">
-          <div class="best-windows-header">
+        <div class="best-windows-overlay collapsible-panel" id="bestWindowsPanel">
+          <div class="panel-header" id="bestWindowsPanelHeader">
             <h4>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              Mejores Ventanas Wingfoil (5 Días)
+              Mejores Ventanas (5 Días)
             </h4>
+            <button class="panel-collapse-btn" title="Desplegar u ocultar mejores ventanas" aria-label="Desplegar u ocultar mejores ventanas">
+              <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
           </div>
-          <div class="best-windows-list" id="bestWindowsList">
-            <div class="window-item-loading">Calculando ventanas óptimas...</div>
+          <div class="panel-body">
+            <div class="best-windows-list" id="bestWindowsList">
+              <div class="window-item-loading">Calculando ventanas óptimas...</div>
+            </div>
           </div>
         </div>
       </div>
