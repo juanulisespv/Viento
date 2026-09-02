@@ -536,6 +536,67 @@ body {
   pointer-events: none;
 }
 
+/* --- Ultra-Compact Pill Badge Design when Collapsed --- */
+.collapsible-panel.collapsed {
+  width: fit-content !important;
+  max-width: fit-content !important;
+  padding: 5px 12px !important;
+  border-radius: 20px !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.collapsible-panel.collapsed .panel-header {
+  padding: 0 !important;
+  gap: 6px !important;
+}
+
+.collapsible-panel.collapsed .panel-header h4 {
+  font-size: 0.76rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+.collapsible-panel.collapsed .panel-collapse-btn {
+  padding: 0 !important;
+}
+
+/* Floating Map Toggle Button */
+.map-floating-toggle-btn {
+  position: absolute;
+  top: 14px;
+  right: 60px;
+  z-index: 850;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+
+.map-floating-toggle-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.map-floating-toggle-btn.active {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
 /* Spots Overlay Wrapper */
 .spots-overlay-wrapper {
   background: var(--bg-card);

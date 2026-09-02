@@ -353,6 +353,8 @@ function initEventListeners() {
 
 // --- Control de Paneles Informativos Desplegables (Individual y Global) ---
 function initCollapsiblePanels() {
+  const isMobile = window.innerWidth <= 768;
+
   const panels = [
     { id: 'spotsPanel', headerId: 'spotsPanelHeader' },
     { id: 'bestWindowsPanel', headerId: 'bestWindowsPanelHeader' },
@@ -364,8 +366,10 @@ function initCollapsiblePanels() {
     const headerEl = document.getElementById(p.headerId);
     if (!panelEl || !headerEl) return;
 
-    // Cargar preferencia guardada en localStorage
-    const isCollapsed = localStorage.getItem(`panel_collapsed_${p.id}`) === 'true';
+    // En móvil, si el usuario no ha guardado una preferencia manual, por defecto estará colapsado en forma de píldora compacta
+    const saved = localStorage.getItem(`panel_collapsed_${p.id}`);
+    const isCollapsed = saved !== null ? (saved === 'true') : isMobile;
+
     if (isCollapsed) {
       panelEl.classList.add('collapsed');
     }
@@ -377,27 +381,40 @@ function initCollapsiblePanels() {
     });
   });
 
-  // Botón maestro para ocultar / mostrar todos los paneles informativos
+  // Botones maestros (Cabecera + Botón Flotante en Mapa) para ocultar / mostrar todos los paneles informativos
   const toggleAllBtn = document.getElementById('toggleAllPanelsBtn');
+  const mapToggleBtn = document.getElementById('mapTogglePanelsBtn');
   const mainContent = document.querySelector('.main-content');
-  if (toggleAllBtn && mainContent) {
-    const isHiddenGlobal = localStorage.getItem('panels_hidden_global') === 'true';
-    if (isHiddenGlobal) {
-      mainContent.classList.add('panels-hidden');
-      toggleAllBtn.classList.add('active');
-      const btnText = toggleAllBtn.querySelector('.btn-text');
-      if (btnText) btnText.textContent = 'Ver Cuadros';
-    }
 
-    toggleAllBtn.addEventListener('click', () => {
-      mainContent.classList.toggle('panels-hidden');
-      const isHidden = mainContent.classList.contains('panels-hidden');
+  const updateGlobalToggleUI = (isHidden) => {
+    if (toggleAllBtn) {
       toggleAllBtn.classList.toggle('active', isHidden);
       const btnText = toggleAllBtn.querySelector('.btn-text');
       if (btnText) btnText.textContent = isHidden ? 'Ver Cuadros' : 'Cuadros';
-      localStorage.setItem('panels_hidden_global', isHidden ? 'true' : 'false');
-    });
-  }
+    }
+    if (mapToggleBtn) {
+      mapToggleBtn.classList.toggle('active', isHidden);
+      const btnText = mapToggleBtn.querySelector('.btn-text');
+      if (btnText) btnText.textContent = isHidden ? 'Ver Cuadros' : 'Cuadros';
+    }
+    if (mainContent) {
+      mainContent.classList.toggle('panels-hidden', isHidden);
+    }
+  };
+
+  const isHiddenGlobal = localStorage.getItem('panels_hidden_global') === 'true';
+  updateGlobalToggleUI(isHiddenGlobal);
+
+  const handleGlobalToggleClick = () => {
+    if (!mainContent) return;
+    const currentlyHidden = mainContent.classList.contains('panels-hidden');
+    const newHiddenState = !currentlyHidden;
+    updateGlobalToggleUI(newHiddenState);
+    localStorage.setItem('panels_hidden_global', newHiddenState ? 'true' : 'false');
+  };
+
+  if (toggleAllBtn) toggleAllBtn.addEventListener('click', handleGlobalToggleClick);
+  if (mapToggleBtn) mapToggleBtn.addEventListener('click', handleGlobalToggleClick);
 }
 
 // --- Cambio de Zona / Región ---

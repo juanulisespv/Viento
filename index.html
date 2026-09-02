@@ -112,6 +112,15 @@
       <!-- Leaflet Map Container -->
       <div id="map" class="map-view"></div>
 
+      <!-- Botón Flotante en Mapa para Ocultar/Mostrar Paneles Informativos -->
+      <button class="map-floating-toggle-btn" id="mapTogglePanelsBtn" title="Ocultar / Mostrar todos los cuadros informativos">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <span class="btn-text">Cuadros</span>
+      </button>
+
       <!-- Floating Legend Overlay -->
       <div class="map-overlay legend-overlay collapsible-panel" id="legendPanel">
         <div class="panel-header" id="legendPanelHeader">
