@@ -448,8 +448,8 @@ async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v22_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v22_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v23_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v23_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -572,6 +572,9 @@ async function loadData(forceRefresh = false) {
 
 // --- Procesar Datos ---
 function processLoadedData(dataArray) {
+  gridMarkers.forEach(m => map.removeLayer(m.marker || m));
+  gridMarkers = [];
+
   rawApiPoints = [];
   spotDataStore = {};
 
@@ -695,34 +698,79 @@ function updateActiveDayChip(dateObj) {
   });
 }
 
-// --- Renderizado de Flechas ---
+// --- Renderizado Optimizado de Flechas (Reutilización in-situ para 60fps) ---
 function renderGridMarkers() {
-  gridMarkers.forEach(m => map.removeLayer(m));
-  gridMarkers = [];
-
   if (rawApiPoints.length === 0) return;
 
   const zoom = map.getZoom();
   const bounds = map.getBounds();
 
   let step = 1;
-  if (zoom <= 10.5) {
-    step = 2;
-  }
-
-  const visiblePoints = rawApiPoints.filter(p => {
-    if (p.r % step !== 0 || p.c % step !== 0) return false;
-    return bounds.contains([p.lat, p.lon]);
-  });
+  if (zoom <= 10.5) step = 2;
 
   let baseSize = step === 1 ? 18 : 22;
 
-  const densityBadge = document.getElementById('densityBadge');
-  if (densityBadge) {
-    densityBadge.textContent = `${visiblePoints.length} flechas API • Cobertura Densa (~900m)`;
+  // Inicializar marcadores solo si la zona cambia o no existen
+  if (gridMarkers.length !== rawApiPoints.length || gridMarkers.length === 0 || !gridMarkers[0].pathEl) {
+    gridMarkers.forEach(m => map.removeLayer(m.marker || m));
+    gridMarkers = [];
+
+    rawApiPoints.forEach(point => {
+      const containerEl = document.createElement('div');
+      containerEl.className = 'grid-arrow-container';
+
+      const wrapperEl = document.createElement('div');
+      wrapperEl.className = 'wind-arrow-icon';
+
+      const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgEl.setAttribute('class', 'wind-arrow-svg');
+      svgEl.setAttribute('viewBox', '0 0 24 24');
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', 'M12 2L4 21l8-4 8 4L12 2z');
+      pathEl.setAttribute('stroke', '#000');
+      pathEl.setAttribute('stroke-width', '1.2');
+
+      svgEl.appendChild(pathEl);
+      wrapperEl.appendChild(svgEl);
+      containerEl.appendChild(wrapperEl);
+
+      const customIcon = L.divIcon({
+        className: 'grid-arrow-icon-wrapper',
+        html: containerEl,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      const marker = L.marker([point.lat, point.lon], { icon: customIcon }).addTo(map);
+      marker.bindTooltip('', { direction: 'top', opacity: 0.95 });
+
+      gridMarkers.push({
+        point,
+        marker,
+        wrapperEl,
+        svgEl,
+        pathEl
+      });
+    });
   }
 
-  visiblePoints.forEach(point => {
+  let visibleCount = 0;
+
+  // Actualizar propiedades in-situ (0 creaciones de nodos DOM al mover el slider)
+  gridMarkers.forEach(item => {
+    const { point, marker, wrapperEl, svgEl, pathEl } = item;
+
+    const isVisible = (point.r % step === 0 && point.c % step === 0) && bounds.contains([point.lat, point.lon]);
+
+    if (!isVisible) {
+      if (marker._icon) marker._icon.style.display = 'none';
+      return;
+    }
+
+    if (marker._icon) marker._icon.style.display = 'block';
+    visibleCount++;
+
     let speedKmh = point.hourly.wind_speed_10m[currentHourIndex];
     let gustsKmh = point.hourly.wind_gusts_10m[currentHourIndex];
     let dir = point.hourly.wind_direction_10m[currentHourIndex];
@@ -739,32 +787,23 @@ function renderGridMarkers() {
     const color = getWingfoilColor(speedKnots);
     const iconSize = Math.min(Math.max(Math.round(baseSize + speedKnots * 0.25), 14), 34);
 
-    const svgIconHtml = `
-      <div class="wind-arrow-icon" style="transform: rotate(${dir}deg);">
-        <svg class="wind-arrow-svg" viewBox="0 0 24 24" width="${iconSize}" height="${iconSize}">
-          <path d="M12 2L4 21l8-4 8 4L12 2z" fill="${color}" stroke="#000" stroke-width="1.2"/>
-        </svg>
-      </div>
-    `;
-
-    const customIcon = L.divIcon({
-      className: 'grid-arrow-container',
-      html: svgIconHtml,
-      iconSize: [iconSize, iconSize],
-      iconAnchor: [iconSize / 2, iconSize / 2]
-    });
-
-    const marker = L.marker([point.lat, point.lon], { icon: customIcon }).addTo(map);
+    const flowDir = (dir + 180) % 360;
+    wrapperEl.style.transform = `rotate(${flowDir}deg)`;
+    svgEl.setAttribute('width', iconSize);
+    svgEl.setAttribute('height', iconSize);
+    pathEl.setAttribute('fill', color);
 
     const dirName = getDirectionName(dir);
     const gustInfo = getGustFactor(speedKnots, gustsKnots);
-    marker.bindTooltip(
-      `<strong>${displaySpeed} ${unitLabel}</strong> (${dirName} ${dir}°)<br/>Ráfagas: ${Math.round(selectedUnit === 'knots' ? gustsKnots : gustsKmh)} ${unitLabel}<br/>Estabilidad: <strong>${gustInfo.text} (${gustInfo.ratio}x)</strong>`,
-      { direction: 'top', opacity: 0.95 }
+    marker.setTooltipContent(
+      `<strong>${displaySpeed} ${unitLabel}</strong> (${dirName} ${dir}°)<br/>Ráfagas: ${Math.round(selectedUnit === 'knots' ? gustsKnots : gustsKmh)} ${unitLabel}<br/>Estabilidad: <strong>${gustInfo.text} (${gustInfo.ratio}x)</strong>`
     );
-
-    gridMarkers.push(marker);
   });
+
+  const densityBadge = document.getElementById('densityBadge');
+  if (densityBadge) {
+    densityBadge.textContent = `${visibleCount} flechas API • Cobertura Densa (~900m)`;
+  }
 }
 
 // --- Indicador de Factor de Ráfaga ---
@@ -826,6 +865,12 @@ function updateSpotCards() {
     const markerIcon = document.getElementById(`markerIcon_${spot.id}`);
     if (markerIcon) {
       markerIcon.style.borderColor = color;
+      const svgEl = markerIcon.querySelector('svg');
+      if (svgEl) {
+        const flowDir = (dir + 180) % 360;
+        svgEl.style.transform = `rotate(${flowDir}deg)`;
+        svgEl.style.transition = 'transform 0.2s ease';
+      }
     }
   });
 }
@@ -1545,7 +1590,8 @@ function lzwEncode(indexStream, minCodeSize) {
 function drawWindArrowCanvas(ctx, x, y, deg, knots, colorHex) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(deg * Math.PI / 180);
+  const flowDeg = (deg + 180) % 360;
+  ctx.rotate(flowDeg * Math.PI / 180);
 
   const size = Math.min(Math.max(14 + knots * 0.25, 12), 26);
 
