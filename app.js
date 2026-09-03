@@ -689,7 +689,9 @@ function setupDaySelector(timeList) {
     chip.className = `day-chip ${i === 0 ? 'active' : ''}`;
     chip.textContent = dayName;
     chip.addEventListener('click', () => {
-      currentHourIndex = idx;
+      // Para días futuros, saltar preferentemente a las 14:00 (térmicos de la tarde)
+      const targetIdx = (i > 0 && idx + 14 < timeList.length) ? idx + 14 : idx;
+      currentHourIndex = targetIdx;
       document.getElementById('timeSlider').value = currentHourIndex;
       updateVisualization();
     });

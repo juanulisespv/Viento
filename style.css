@@ -77,6 +77,18 @@ body {
   z-index: 1000;
 }
 
+.header-primary-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .header-brand {
   display: flex;
   align-items: center;
@@ -904,6 +916,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.day-selector-container {
+  display: flex;
+  align-items: center;
+}
+
+.time-status-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .time-display {
@@ -1043,42 +1067,196 @@ body {
 
 /* Responsive Rules */
 @media (max-width: 768px) {
+  /* --- Top Header Mobile Layout --- */
   .top-header {
-    padding: 0 12px;
+    height: auto;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.98);
   }
-  .header-brand h1 {
-    font-size: 0.95rem;
+
+  .header-primary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
   }
-  .header-brand .subtitle {
+
+  .zone-selector-container {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .zone-select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 36px;
+    font-size: 0.82rem;
+    padding: 0 10px;
+  }
+
+  .header-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .weekly-btn, .toggle-all-panels-btn {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  /* Scrollable Action Strip for Mobile Header */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 3px;
+  }
+
+  .header-actions::-webkit-scrollbar {
     display: none;
   }
-  .legend-overlay {
-    bottom: 125px;
-    top: auto;
-    right: 12px;
-    max-width: 160px;
-    padding: 8px 10px;
+
+  .header-actions > * {
+    flex-shrink: 0;
   }
+
+  .gif-btn, .unit-toggle, .model-toggle, .cache-status, .refresh-btn {
+    height: 34px;
+  }
+
+  .model-btn {
+    font-size: 0.74rem;
+    padding: 0 8px;
+  }
+
+  .unit-btn {
+    font-size: 0.74rem;
+    padding: 0 8px;
+  }
+
+  .refresh-btn span, .gif-btn span {
+    font-size: 0.76rem;
+  }
+
+  /* --- Bottom Control Bar Mobile Layout --- */
+  .time-control-bar {
+    height: auto;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .time-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .day-selector-container {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .day-selector-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .day-selector {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .day-chip {
+    padding: 4px 10px;
+    font-size: 0.74rem;
+    flex-shrink: 0;
+  }
+
+  .day-chip-notice {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+  }
+
+  .time-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .time-display {
+    font-size: 0.84rem;
+  }
+
+  .player-controls .play-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .slider-wrapper {
+    margin-top: 2px;
+  }
+
+  /* --- Map Overlays positioning on Mobile --- */
+  .legend-overlay {
+    bottom: 135px;
+    top: auto;
+    right: 10px;
+    max-width: 150px;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+  }
+
+  .leaflet-bottom.leaflet-right {
+    bottom: 130px !important;
+    right: 10px !important;
+  }
+
+  .map-overlay-column.left-column {
+    top: 96px;
+    left: 10px;
+    right: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
   .spots-overlay {
-    top: 12px;
-    left: 12px;
-    right: 12px;
+    top: 0;
+    left: 0;
+    right: 0;
     flex-direction: row;
   }
+
   .spot-card {
     flex: 1;
     min-width: 0;
-    padding: 8px 10px;
+    padding: 6px 8px;
   }
+
   .spot-summary-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .day-selector {
-    display: none;
-  }
-  .time-control-bar {
-    height: 100px;
-    padding: 10px 14px;
   }
 }
 

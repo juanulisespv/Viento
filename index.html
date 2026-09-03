@@ -36,37 +36,41 @@
   <div class="app-container">
     <!-- Top Header -->
     <header class="top-header">
-      <div class="zone-selector-container">
-        <select id="zoneSelect" class="zone-select" title="Seleccionar Spot o Embalse">
-          <optgroup label="Embalses (Agua Dulce)">
-            <option value="ullibarri" selected>Ullíbarri & Urrunaga (Álava)</option>
-            <option value="ebro">Embalse del Ebro (Arija & Cabañas)</option>
-            <option value="yesa">Embalse de Yesa (Navarra)</option>
-          </optgroup>
-          <optgroup label="Costa & Rías (Aguas Protegidas)">
-            <option value="regaton">Playa del Regatón (Laredo / Ría)</option>
-            <option value="ereaga">El Abra / Ereaga (Getxo)</option>
-            <option value="chingudi">Bahía de Txingudi (Hondarribia)</option>
-          </optgroup>
-        </select>
+      <div class="header-primary-row">
+        <div class="zone-selector-container">
+          <select id="zoneSelect" class="zone-select" title="Seleccionar Spot o Embalse">
+            <optgroup label="Embalses (Agua Dulce)">
+              <option value="ullibarri" selected>Ullíbarri & Urrunaga (Álava)</option>
+              <option value="ebro">Embalse del Ebro (Arija & Cabañas)</option>
+              <option value="yesa">Embalse de Yesa (Navarra)</option>
+            </optgroup>
+            <optgroup label="Costa & Rías (Aguas Protegidas)">
+              <option value="regaton">Playa del Regatón (Laredo / Ría)</option>
+              <option value="ereaga">El Abra / Ereaga (Getxo)</option>
+              <option value="chingudi">Bahía de Txingudi (Hondarribia)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="header-quick-actions">
+          <button class="weekly-btn" id="weeklyBtn" title="Resumen de la semana en tabla">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            <span class="btn-text">5 Días</span>
+          </button>
+
+          <button class="toggle-all-panels-btn" id="toggleAllPanelsBtn" title="Ocultar / Mostrar todos los cuadros informativos">
+            <svg class="eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span class="btn-text">Cuadros</span>
+          </button>
+        </div>
       </div>
 
       <div class="header-actions">
-        <button class="weekly-btn" id="weeklyBtn" title="Resumen de la semana en tabla">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 20V10M12 20V4M6 20v-6"/>
-          </svg>
-          <span>Resumen 5 Días</span>
-        </button>
-
-        <button class="toggle-all-panels-btn" id="toggleAllPanelsBtn" title="Ocultar / Mostrar todos los cuadros informativos">
-          <svg class="eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-          <span class="btn-text">Cuadros</span>
-        </button>
-
         <div class="gif-dropdown">
           <button class="gif-btn" id="exportGifBtn" title="Exportar GIF animado">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -88,7 +92,7 @@
         </div>
 
         <div class="unit-toggle" id="unitToggle">
-          <button class="unit-btn active" data-unit="knots">Nudos (kn)</button>
+          <button class="unit-btn active" data-unit="knots">kn</button>
           <button class="unit-btn" data-unit="kmh">km/h</button>
         </div>
 
@@ -255,26 +259,29 @@
     <!-- Bottom Control Bar (Time Slider & Quick Navigation) -->
     <footer class="time-control-bar glass-card">
       <div class="time-header">
-        <div class="time-display">
-          <span class="time-icon">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-            </svg>
-          </span>
-          <span class="current-date-time" id="currentDateTime">Cargando previsión...</span>
+        <div class="day-selector-container">
+          <div class="day-selector" id="daySelector">
+            <!-- Filled by JS -->
+          </div>
         </div>
 
-        <!-- Quick Day Buttons -->
-        <div class="day-selector" id="daySelector">
-          <!-- Filled by JS -->
-        </div>
+        <div class="time-status-row">
+          <div class="time-display">
+            <span class="time-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+            </span>
+            <span class="current-date-time" id="currentDateTime">Cargando previsión...</span>
+          </div>
 
-        <div class="player-controls">
-          <button class="play-btn" id="playBtn" title="Reproducir animación horaria">
-            <svg id="playIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-          </button>
+          <div class="player-controls">
+            <button class="play-btn" id="playBtn" title="Reproducir animación horaria">
+              <svg id="playIcon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
