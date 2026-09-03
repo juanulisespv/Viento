@@ -16,12 +16,13 @@
   --accent-purple: #a855f7;
 
   /* Wingfoil Wind Speed Palette (Colores Personalizados) */
-  --c-calm: #64748b;         /* < 8 kn (Gris) */
-  --c-light: #eab308;        /* 8 - 12 kn (Amarillo) */
-  --c-ideal-soft: #0B4619;   /* 12 - 16 kn (Verde Oscuro) */
-  --c-ideal-strong: #76E024; /* 16 - 20 kn (Verde Neón) */
-  --c-strong: #2563eb;       /* 20 - 25 kn (Azul Cobalto) */
-  --c-extreme: #9333ea;      /* > 25 kn (Púrpura) */
+  --c-calm: #6B7280;         /* < 10 kn (No navegable - Gris) */
+  --c-light: #60A5FA;        /* 10 - 14 kn (Ligero - Azul claro) */
+  --c-ideal-soft: #2DD4BF;   /* 14 - 18 kn (Ideal Suave - Aguamarina) */
+  --c-ideal-strong: #22C55E; /* 18 - 22 kn (Ideal Fuerte - Verde) */
+  --c-strong: #F59E0B;       /* 22 - 26 kn (Fuerte - Amarillo) */
+  --c-very-strong: #F97316;  /* 26 - 30 kn (Muy fuerte - Naranja) */
+  --c-extreme: #EF4444;      /* > 30 kn (Extremo - Rojo) */
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --radius-lg: 16px;
@@ -689,6 +690,7 @@ body {
 .c-ideal-soft { background-color: var(--c-ideal-soft); }
 .c-ideal-strong { background-color: var(--c-ideal-strong); }
 .c-strong { background-color: var(--c-strong); }
+.c-very-strong { background-color: var(--c-very-strong); }
 .c-extreme { background-color: var(--c-extreme); }
 
 /* Spot Cards Overlay */

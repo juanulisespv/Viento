@@ -954,7 +954,7 @@ function calculateBestWindows() {
     const hour = dateObj.getHours();
 
     const isDaylight = hour >= 8 && hour <= 21;
-    const isGoodWind = speedKn >= 8;
+    const isGoodWind = speedKn >= 10;
 
     if (isDaylight && isGoodWind) {
       if (!currentWindow) {
@@ -1022,22 +1022,25 @@ function calculateBestWindows() {
     const mainDir = getDirectionName(w.dirs[Math.floor(w.dirs.length / 2)]);
 
     let qualityClass = 'c-calm';
-    let qualityText = 'Flojo (<8kn)';
-    if (avgSpeed >= 8 && avgSpeed < 12) {
+    let qualityText = 'No navegable (<10kn)';
+    if (avgSpeed >= 10 && avgSpeed < 14) {
       qualityClass = 'c-light';
-      qualityText = 'Suave (8-12kn)';
-    } else if (avgSpeed >= 12 && avgSpeed < 16) {
+      qualityText = 'Ligero (10-14kn)';
+    } else if (avgSpeed >= 14 && avgSpeed < 18) {
       qualityClass = 'c-ideal-soft';
       qualityText = 'Ideal Suave';
-    } else if (avgSpeed >= 16 && avgSpeed <= 20) {
+    } else if (avgSpeed >= 18 && avgSpeed <= 22) {
       qualityClass = 'c-ideal-strong';
       qualityText = 'Ideal Fuerte';
-    } else if (avgSpeed > 20 && avgSpeed <= 25) {
+    } else if (avgSpeed > 22 && avgSpeed <= 26) {
       qualityClass = 'c-strong';
       qualityText = 'Fuerte';
-    } else if (avgSpeed > 25) {
-      qualityClass = 'c-extreme';
+    } else if (avgSpeed > 26 && avgSpeed <= 30) {
+      qualityClass = 'c-very-strong';
       qualityText = 'Muy Fuerte';
+    } else if (avgSpeed > 30) {
+      qualityClass = 'c-extreme';
+      qualityText = 'Extremo';
     }
 
     const startDate = new Date(w.startTime);
@@ -1069,7 +1072,7 @@ function renderBestWindows(topWindows) {
   if (!container) return;
 
   if (topWindows.length === 0) {
-    container.innerHTML = `<div class="window-item-loading">Sin ventanas óptimas (≥12kn) en los 5 días</div>`;
+    container.innerHTML = `<div class="window-item-loading">Sin ventanas óptimas (≥10kn) en los 5 días</div>`;
     return;
   }
 
@@ -1149,20 +1152,26 @@ function calculateWeeklySummary() {
 
     const gustInfo = getGustFactor(avgSpeed, maxGust);
 
-    let qualityLabel = 'Flojo';
-    let qualityColor = '#64748b';
-    if (avgSpeed >= 16 && avgSpeed <= 20) {
+    let qualityLabel = 'No navegable';
+    let qualityColor = '#6B7280';
+    if (avgSpeed >= 18 && avgSpeed <= 22) {
       qualityLabel = 'Ideal Fuerte';
-      qualityColor = '#76E024';
-    } else if (avgSpeed >= 12 && avgSpeed < 16) {
+      qualityColor = '#22C55E';
+    } else if (avgSpeed >= 14 && avgSpeed < 18) {
       qualityLabel = 'Ideal Suave';
-      qualityColor = '#0B4619';
-    } else if (avgSpeed >= 8) {
-      qualityLabel = 'Suave';
-      qualityColor = '#eab308';
-    } else if (avgSpeed > 20) {
+      qualityColor = '#2DD4BF';
+    } else if (avgSpeed >= 10 && avgSpeed < 14) {
+      qualityLabel = 'Ligero';
+      qualityColor = '#60A5FA';
+    } else if (avgSpeed > 22 && avgSpeed <= 26) {
       qualityLabel = 'Fuerte';
-      qualityColor = '#2563eb';
+      qualityColor = '#F59E0B';
+    } else if (avgSpeed > 26 && avgSpeed <= 30) {
+      qualityLabel = 'Muy Fuerte';
+      qualityColor = '#F97316';
+    } else if (avgSpeed > 30) {
+      qualityLabel = 'Extremo';
+      qualityColor = '#EF4444';
     }
 
     daysMap.push({
@@ -1674,31 +1683,34 @@ function drawLegendCanvas(ctx, width, height) {
 
   ctx.font = '10px Inter, system-ui, sans-serif';
   const items = [
-    { label: '<8kn Flojo', color: '#64748b' },
-    { label: '8-12kn Suave', color: '#eab308' },
-    { label: '12-16kn Ideal Suave', color: '#0B4619' },
-    { label: '16-20kn Ideal Fuerte', color: '#76E024' },
-    { label: '20-25kn Fuerte', color: '#2563eb' },
-    { label: '>25kn Muy Fuerte', color: '#9333ea' }
+    { label: '<10kn No nav.', color: '#6B7280' },
+    { label: '10-14kn Ligero', color: '#60A5FA' },
+    { label: '14-18kn Ideal S.', color: '#2DD4BF' },
+    { label: '18-22kn Ideal F.', color: '#22C55E' },
+    { label: '22-26kn Fuerte', color: '#F59E0B' },
+    { label: '26-30kn Muy F.', color: '#F97316' },
+    { label: '>30kn Extremo', color: '#EF4444' }
   ];
 
+  const itemWidth = Math.floor((width - 20) / items.length);
   let startX = 10;
   items.forEach(item => {
     ctx.fillStyle = item.color;
     ctx.fillRect(startX, height - 24, 10, 10);
     ctx.fillStyle = '#cbd5e1';
-    ctx.fillText(item.label, startX + 14, height - 15);
-    startX += 115;
+    ctx.fillText(item.label, startX + 13, height - 15);
+    startX += itemWidth;
   });
 }
 
 function getWingfoilColorHex(knots) {
-  if (knots < 8) return '#64748b';
-  if (knots < 12) return '#eab308';
-  if (knots < 16) return '#0B4619';   // Ideal Suave: Verde Oscuro
-  if (knots <= 20) return '#76E024';  // Ideal Fuerte: Verde Neón
-  if (knots <= 25) return '#2563eb';
-  return '#9333ea';
+  if (knots < 10) return '#6B7280';
+  if (knots < 14) return '#60A5FA';
+  if (knots < 18) return '#2DD4BF';
+  if (knots <= 22) return '#22C55E';
+  if (knots <= 26) return '#F59E0B';
+  if (knots <= 30) return '#F97316';
+  return '#EF4444';
 }
 
 function dataURItoBlob(dataURI) {
@@ -1722,21 +1734,23 @@ function knotsToKmh(kn) {
 }
 
 function getWingfoilColor(knots) {
-  if (knots === null || knots === undefined || isNaN(knots) || knots < 8) return 'var(--c-calm)';
-  if (knots < 12) return 'var(--c-light)';
-  if (knots < 16) return 'var(--c-ideal-soft)';
-  if (knots <= 20) return 'var(--c-ideal-strong)';
-  if (knots <= 25) return 'var(--c-strong)';
+  if (knots === null || knots === undefined || isNaN(knots) || knots < 10) return 'var(--c-calm)';
+  if (knots < 14) return 'var(--c-light)';
+  if (knots < 18) return 'var(--c-ideal-soft)';
+  if (knots <= 22) return 'var(--c-ideal-strong)';
+  if (knots <= 26) return 'var(--c-strong)';
+  if (knots <= 30) return 'var(--c-very-strong)';
   return 'var(--c-extreme)';
 }
 
 function getWingfoilStatusText(knots) {
-  if (knots < 8) return 'Sin viento <8kn';
-  if (knots < 12) return 'Viento suave 8-12kn';
-  if (knots < 16) return 'Ideal Suave 12-16kn';
-  if (knots <= 20) return 'Ideal Fuerte 16-20kn';
-  if (knots <= 25) return 'Viento fuerte 20-25kn';
-  return 'Muy Fuerte >25kn';
+  if (knots < 10) return 'No navegable <10kn';
+  if (knots < 14) return 'Viento ligero 10-14kn';
+  if (knots < 18) return 'Ideal Suave 14-18kn';
+  if (knots <= 22) return 'Ideal Fuerte 18-22kn';
+  if (knots <= 26) return 'Viento fuerte 22-26kn';
+  if (knots <= 30) return 'Muy fuerte 26-30kn';
+  return 'Extremo >30kn';
 }
 
 function getDirectionName(deg) {
