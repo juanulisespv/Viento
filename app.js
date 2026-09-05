@@ -703,7 +703,7 @@ function setupDaySelector(timeList) {
     const noticeBtn = document.createElement('button');
     noticeBtn.className = 'day-chip-notice';
     noticeBtn.title = 'AROME HD solo ofrece 48h de previsión. Haz clic para cambiar a ICON 7k (5 Días).';
-    noticeBtn.innerHTML = `<span>Días 3–5 no disponibles en AROME (48h) • Cambiar a ICON 7k</span>`;
+    noticeBtn.innerHTML = `<span class="notice-full">Días 3–5 no disponibles en AROME (48h) • Cambiar a ICON 7k</span><span class="notice-short">⚠️ AROME 48h • Cambiar a ICON</span>`;
     noticeBtn.addEventListener('click', () => {
       document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
       const iconBtn = document.querySelector('.model-btn[data-model="icon_eu"]');

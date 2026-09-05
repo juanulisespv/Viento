@@ -38,11 +38,12 @@
   padding: 0;
 }
 
-body {
+html, body {
   font-family: var(--font-sans);
   background-color: var(--bg-dark);
   color: var(--text-primary);
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -61,8 +62,11 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
+  height: -webkit-fill-available;
   width: 100vw;
   position: relative;
+  overflow: hidden;
 }
 
 /* Top Header */
@@ -75,6 +79,7 @@ body {
   justify-content: space-between;
   padding: 0 20px;
   z-index: 1000;
+  flex-shrink: 0;
 }
 
 .header-primary-row {
@@ -387,6 +392,7 @@ body {
 /* Main Content Area */
 .main-content {
   flex: 1;
+  min-height: 0;
   position: relative;
   width: 100%;
 }
@@ -910,6 +916,7 @@ body {
   justify-content: center;
   gap: 8px;
   z-index: 1000;
+  flex-shrink: 0;
 }
 
 .time-header {
@@ -1070,11 +1077,11 @@ body {
   /* --- Top Header Mobile Layout --- */
   .top-header {
     height: auto;
-    padding: 8px 12px;
+    padding: 6px 10px;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 6px;
     background: rgba(15, 23, 42, 0.98);
   }
 
@@ -1082,7 +1089,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
   }
 
@@ -1096,21 +1103,21 @@ body {
     min-width: 0;
     max-width: 100%;
     height: 36px;
-    font-size: 0.82rem;
-    padding: 0 10px;
+    font-size: 0.8rem;
+    padding: 0 8px;
   }
 
   .header-quick-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     flex-shrink: 0;
   }
 
   .weekly-btn, .toggle-all-panels-btn {
     height: 36px;
-    padding: 0 10px;
-    font-size: 0.78rem;
+    padding: 0 8px;
+    font-size: 0.76rem;
     white-space: nowrap;
   }
 
@@ -1118,13 +1125,14 @@ body {
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 3px;
+    padding-bottom: 2px;
+    padding-right: 14px; /* Essential right padding so end items aren't clipped */
   }
 
   .header-actions::-webkit-scrollbar {
@@ -1136,36 +1144,51 @@ body {
   }
 
   .gif-btn, .unit-toggle, .model-toggle, .cache-status, .refresh-btn {
-    height: 34px;
+    height: 32px;
+  }
+
+  .gif-dropdown {
+    position: relative;
+  }
+
+  .gif-menu {
+    position: fixed;
+    top: 86px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    min-width: unset;
+    z-index: 9999;
   }
 
   .model-btn {
-    font-size: 0.74rem;
-    padding: 0 8px;
+    font-size: 0.72rem;
+    padding: 0 7px;
   }
 
   .unit-btn {
-    font-size: 0.74rem;
-    padding: 0 8px;
+    font-size: 0.72rem;
+    padding: 0 7px;
   }
 
   .refresh-btn span, .gif-btn span {
-    font-size: 0.76rem;
+    font-size: 0.74rem;
   }
 
   /* --- Bottom Control Bar Mobile Layout --- */
   .time-control-bar {
     height: auto;
-    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+    padding: 6px 12px calc(8px + env(safe-area-inset-bottom, 0px));
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    background: rgba(15, 23, 42, 0.98);
   }
 
   .time-header {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
   }
 
@@ -1176,6 +1199,7 @@ body {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: 2px;
+    padding-right: 10px;
   }
 
   .day-selector-container::-webkit-scrollbar {
@@ -1184,20 +1208,30 @@ body {
 
   .day-selector {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     align-items: center;
   }
 
   .day-chip {
-    padding: 4px 10px;
-    font-size: 0.74rem;
+    padding: 3px 8px;
+    font-size: 0.72rem;
     flex-shrink: 0;
   }
 
   .day-chip-notice {
-    padding: 4px 10px;
-    font-size: 0.72rem;
+    padding: 3px 8px;
+    font-size: 0.7rem;
     flex-shrink: 0;
+    max-width: 240px;
+    overflow: hidden;
+  }
+
+  .notice-full {
+    display: none;
+  }
+
+  .notice-short {
+    display: inline;
   }
 
   .time-status-row {
@@ -1208,38 +1242,51 @@ body {
   }
 
   .time-display {
-    font-size: 0.84rem;
+    font-size: 0.8rem;
   }
 
   .player-controls .play-btn {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
   }
 
   .slider-wrapper {
-    margin-top: 2px;
+    margin-top: 1px;
+    margin-bottom: 2px;
+    padding: 0 4px;
+  }
+
+  .time-slider {
+    height: 8px;
+  }
+
+  .time-slider::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
   }
 
   /* --- Map Overlays positioning on Mobile --- */
   .legend-overlay {
-    bottom: 135px;
+    bottom: calc(115px + env(safe-area-inset-bottom, 0px));
     top: auto;
     right: 10px;
-    max-width: 150px;
+    max-width: 145px;
     padding: 6px 8px;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
   }
 
   .leaflet-bottom.leaflet-right {
-    bottom: 130px !important;
+    bottom: calc(110px + env(safe-area-inset-bottom, 0px)) !important;
     right: 10px !important;
   }
 
   .map-overlay-column.left-column {
-    top: 96px;
+    top: 90px;
     left: 10px;
     right: 10px;
     max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 220px);
+    overflow-y: auto;
   }
 
   .spots-overlay {
@@ -1251,12 +1298,21 @@ body {
 
   .spot-card {
     flex: 1;
-    min-width: 0;
+    min-width: 135px;
     padding: 6px 8px;
   }
 
   .spot-summary-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 769px) {
+  .notice-short {
+    display: none;
+  }
+  .notice-full {
+    display: inline;
   }
 }
 
