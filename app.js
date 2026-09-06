@@ -199,12 +199,19 @@ function initMap() {
   });
 
   // Asegurar que el mapa invalide su tamaño tras asentarse el layout flexbox en WebKit / iPad
+  requestAnimationFrame(() => {
+    if (map) {
+      map.invalidateSize();
+      renderGridMarkers();
+    }
+  });
+  // Segundo intento con más delay para iPad Safari (toolbar dinámica puede tardar en asentarse)
   setTimeout(() => {
     if (map) {
       map.invalidateSize();
       renderGridMarkers();
     }
-  }, 300);
+  }, 600);
 }
 
 function renderSpotMarkersOnMap() {
