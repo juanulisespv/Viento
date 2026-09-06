@@ -44,6 +44,7 @@ html, body {
   color: var(--text-primary);
   height: 100vh;
   height: 100dvh;
+  height: -webkit-fill-available;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -61,10 +62,8 @@ html, body {
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  height: -webkit-fill-available;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -1043,14 +1042,32 @@ html, body {
 }
 
 /* Leaflet Custom DivIcon for Wind Arrow Grid */
+.grid-arrow-icon-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.grid-arrow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 .wind-arrow-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   transition: transform 0.2s ease;
 }
 
 .wind-arrow-svg {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
   transform-origin: center center;
 }

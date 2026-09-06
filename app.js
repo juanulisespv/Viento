@@ -181,6 +181,30 @@ function initMap() {
   map.on('zoomend moveend', () => {
     renderGridMarkers();
   });
+
+  window.addEventListener('resize', () => {
+    if (map) {
+      map.invalidateSize();
+      renderGridMarkers();
+    }
+  });
+
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        renderGridMarkers();
+      }
+    }, 200);
+  });
+
+  // Asegurar que el mapa invalide su tamaño tras asentarse el layout flexbox en WebKit / iPad
+  setTimeout(() => {
+    if (map) {
+      map.invalidateSize();
+      renderGridMarkers();
+    }
+  }, 300);
 }
 
 function renderSpotMarkersOnMap() {
@@ -505,8 +529,8 @@ async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v23_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v23_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v25_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v25_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
@@ -759,10 +783,11 @@ function updateActiveDayChip(dateObj) {
 
 // --- Renderizado Optimizado de Flechas (Reutilización in-situ para 60fps) ---
 function renderGridMarkers() {
-  if (rawApiPoints.length === 0) return;
+  if (rawApiPoints.length === 0 || !map) return;
 
   const zoom = map.getZoom();
   const bounds = map.getBounds();
+  const paddedBounds = bounds && bounds.isValid() ? bounds.pad(0.1) : null;
 
   let step = 1;
   if (zoom <= 10.5) step = 2;
@@ -784,6 +809,8 @@ function renderGridMarkers() {
       const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svgEl.setAttribute('class', 'wind-arrow-svg');
       svgEl.setAttribute('viewBox', '0 0 24 24');
+      svgEl.setAttribute('width', '22');
+      svgEl.setAttribute('height', '22');
 
       const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       pathEl.setAttribute('d', 'M12 2L4 21l8-4 8 4L12 2z');
@@ -820,14 +847,17 @@ function renderGridMarkers() {
   gridMarkers.forEach(item => {
     const { point, marker, wrapperEl, svgEl, pathEl } = item;
 
-    const isVisible = (point.r % step === 0 && point.c % step === 0) && bounds.contains([point.lat, point.lon]);
+    const inBounds = paddedBounds ? paddedBounds.contains([point.lat, point.lon]) : true;
+    const isVisible = (point.r % step === 0 && point.c % step === 0) && inBounds;
+
+    const iconEl = marker.getElement ? marker.getElement() : (marker._icon || null);
 
     if (!isVisible) {
-      if (marker._icon) marker._icon.style.display = 'none';
+      if (iconEl) iconEl.style.display = 'none';
       return;
     }
 
-    if (marker._icon) marker._icon.style.display = 'block';
+    if (iconEl) iconEl.style.display = 'block';
     visibleCount++;
 
     let speedKmh = point.hourly.wind_speed_10m[currentHourIndex];
