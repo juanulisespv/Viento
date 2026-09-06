@@ -1,9 +1,9 @@
-const CACHE_NAME = 'viento-embalses-v25';
+const CACHE_NAME = 'viento-embalses-v26';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=25',
-  './app.js?v=25',
+  './style.css?v=26',
+  './app.js?v=26',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',

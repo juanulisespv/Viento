@@ -536,8 +536,8 @@ async function loadData(forceRefresh = false) {
   const statusText = document.getElementById('statusText');
   const statusDot = document.querySelector('.status-dot');
 
-  const cacheKeyModel = `viento_data_v25_${selectedRegionId}_${selectedModel}`;
-  const cacheModelRunKey = `viento_model_run_v25_${selectedRegionId}_${selectedModel}`;
+  const cacheKeyModel = `viento_data_v26_${selectedRegionId}_${selectedModel}`;
+  const cacheModelRunKey = `viento_model_run_v26_${selectedRegionId}_${selectedModel}`;
 
   const currentModelRun = getLatestModelRun();
   const cachedModelRun = localStorage.getItem(cacheModelRunKey);
